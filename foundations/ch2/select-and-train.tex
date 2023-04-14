@@ -1,0 +1,81 @@
+\section{Selecting and training a network machine learning model}
+\label{sec:ch2:select}
+
+So, now you've got your data loaded and pre-processed... what next?
+
+\subsection{Generating new representations from your data}
+
+As you were briefly introduced to in Section \ref{sec:ch1:whatis} and will cover more thoroughly in Chapter \ref{sec:ch6}, a major problem with learning from network data is that, inherently, networks in their rawest form are not tabular datasets. This means that if you want to apply any of the breadth of knowledge that has been acquired in general machine learning (which is typically designed for tabular datasets), you need to learn how to adapt your network to be compatible with tabular approaches, or learn how to adapt your general machine learning architecture for network layouts, such as adjacency matrices, which properly convey the dependences in network data. This is called \emph{representation learning}, and even neural networks typically do this under the hood with architectures like autoencoders.
+
+As you will learn, particularly in the end of this book in Chapter \ref{sec:ch10}, the former is possible, but generally a bit more involved. The latter approach tends to be, in our opinion, a bit more straightforward at first, and is usually fantastic for most applications. So, how do you obtain a tabular representation of your dataset? 
+
+Well, one possible thing you can do is you can use something called a spectral embedding from Chapter \ref{sec:ch6}, a technique that you will learn has a wide range of applications in network machine learning whether you are studying one network, pairs of networks, or multiple networks. Let's see what happens when we spectrally embed our connectome:
+
+\begin{lstlisting}[style=python]
+from graspologic.embed import AdjacencySpectralEmbed
+
+embedding = AdjacencySpectralEmbed().fit_transform(A_xfm)
+\end{lstlisting}
+
+An \emph{embedding} takes the adjacency matrix, which is a matrix representation of the entire network, and turns it into a tabular array. Each row is called an \emph{estimated latent position} for a given node, and each column is called an \emph{estimated latent dimension} of the network. This means that if there are $n$ nodes, there are $n$ rows of the spectral embedding, and if there are $d$ estimated latent dimensions of the network, there are $d$ columns. Overall, the spectral embedding has taken the $n \times n$ adjacency matrix, which we \emph{can't} inherently use network machine learning algorithms on, and \emph{transformed} it into a $n \times d$ tabular array, which we \emph{can} inherently use machine learning algorithms on. We'll visualize this embedding using a \emph{pairs plot}, which as you will learn later, is a scatter plot showing where each node is a single point in the plot, and the x and y axes are different \emph{pairs} of latent dimensions for that particular node:
+
+\begin{lstlisting}[style=python]
+from graspologic.plot import pairplot
+
+_ = pairplot(embedding, title="Spectral Embedding for connectome")
+\end{lstlisting}
+The results of this pairs plot are shown in Figure \ref{fig:ch2:pairplots}(A).
+
+As it turns out, this particular representation of the adjacency matrix through the \emph{spectral embedding} can, optionally, be tied into a statistical model if you make some assumptions; particularly, those of the stochastic block model described in Section \ref{sec:ch5:sbm}. Basically, the stochastic block model says that each node is a member of a subgroup, called a \emph{community}, and its connectivity to other nodes in the network is dictated by which community it is a member of, and which community the other node is a member of. This sounds a \emph{lot} like the question that your colleague wanted you to approach, since he wanted a way to take the nodes of the network and form ``functionally similar'' subgroups from them. 
+
+\subsection{Using your representations to learn new features from the network}
+
+Now that we have a tabular representation of the data, we can take attempt to use the intuition and assumptions of the stochastic block model to cluster our nodes. Let's see what happens when we apply \texttt{KMeans} to our data:
+\begin{lstlisting}[style=python]
+from sklearn.cluster import KMeans
+
+labels = KMeans(n_clusters=2).fit_predict(embedding)
+_ = pairplot(embedding, labels=labels, legend_name="Predicter Clusters", 
+                 title="KMeans clustering")
+\end{lstlisting}
+
+The results of this pairs plot are shown in Figure \ref{fig:ch2:pairplots}(B).
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{foundations/ch2/Images/pairplots.png}
+    \caption[The pairs plot for embedded connectomes]{\textbf{(A)} shows the  pairs plot for the estimated latent dimensions. \textbf{(B)} shows the  pairs plot with predicted communities of nodes via \texttt{KMeans} with $2$ clusters.}
+    \label{fig:ch2:pairplots}
+\end{figure}
+So, it looks like the $k$-means was able to learn $2$ clusters from our dataset. These clusters are indicated by the ``blobs'' of points that are red or blue, respectively.
+
+If you're careful, you'll notice we did something a little weird here. Why did we choose $2$? Why not $5$? Why not $8$? We chose $2$ here somewhat arbitrarily. In general, when you don't know what to expect from your data (we didn't know what to expect here, other than that we wanted a modestly sized way to group the nodes up), it's a good idea to use quantitative means to make these determinations for you. 
+
+With \texttt{KMeans}, we can use something called the silhouette score to do this for us. You choose the optimal number of clusters as the clustering with the highest silhouette score. You'll learn a lot more about the silhouette score when you learn about community detection in Section \ref{sec:ch7:comm_detect}. \texttt{graspologic} makes this process pretty straightforward with a \texttt{KMeansCluster} class, which uses the silhouette score under the hood:
+
+\begin{lstlisting}[style=python]
+from graspologic.cluster import KMeansCluster
+
+labels = KMeansCluster(max_clusters=10).fit_predict(embedding)
+_ = pairplot(embedding, labels=labels, title="KMeans clustering, automatic selection", 
+                 legend_name="Predicted Clusters")
+\end{lstlisting}
+Unlike the previous approach, it looks like with silhouette score selection, we ended up with $5$ clusters being optimal, not $2$. The pairs plot for the embedded data with the new labels are in Figure \ref{fig:ch2:pairplots_impute}(A). Note that you might get a different number of estimated clusters than we did, because there is some randomness in the unsupervised learning procedure that we used here.
+
+So, what about other possible approaches? Unless you are pretty confident that the clusters you are looking for have ``blobs'' that are totally spherically symmetric (basically, they look like ``balls'' in the dataset), $k$-means can be a pretty bad idea. As you'll learn later, another strategy called the gaussian mixture model, or \texttt{GMM}, handles this a bit more elegantly, and allows your cluster blobs to be pretty much any ellipse-like shape. We can use \texttt{GMM} and automatically select the number of clusters using the Bayesian Information Criterion, or BIC, with \texttt{AutoGMMCluster}:
+\begin{lstlisting}[style=python]
+from graspologic.cluster import AutoGMMCluster
+
+labels = AutoGMMCluster(max_components=10).fit_predict(embedding)
+_ = pairplot(embedding, labels=labels, title="AutoGMM Clustering", 
+                  legend_name="Predicted Clusters")
+\end{lstlisting}
+The pairs plot for the embedded data with the labels determined by \texttt{GMM} in Figure \ref{fig:ch2:pairplots_impute}(B). It looks like GMM actually found $4$ clusters to be a bit more optimal than $3$ clusters. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{foundations/ch2/Images/pairplots_impute.png}
+    \caption[Comparison of labels estimated by $k$-means and GMM]{\textbf{(A)} the pairs plot for the embedded data, with node communities estimated by \texttt{KMeans}. \textbf{(B)} the pairs plot for the embedded data, with node communities estimated by \texttt{GMM}.}
+    \label{fig:ch2:pairplots_impute}
+\end{figure}
+
+\newpage

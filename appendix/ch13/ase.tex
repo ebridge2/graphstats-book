@@ -1,0 +1,309 @@
+\section{Adjacency Spectral Embedding}
+\label{app:ch13:ase}
+
+\subsection{The eigendecomposition allows us to identify latent position matrices from a probability matrix}
+
+The singular value decomposition of the probability matrix $P$ is shown in Figure \ref{sec:ch6:ase:svd}(B).
+
+\begin{figure}
+    \centering
+    \includegraphics{}
+    \caption[\texttt{svd} of a homophilic probability matrix]{\textbf{(A)} the probability matrix, $P$. \textbf{(B)} the eigendecomposition of $P$.}
+    \label{fig:ch6:ase:svd}
+\end{figure}
+
+If you look very closely at this eigendecomposition, there are some very peculiar facts about it, which we'll get a little more formal about here.
+
+\subsubsection{The eigendecomposition for symmetric positive semi-definite matrices}
+
+Since we are dealing with simple networks, the probability matrix must, by definition, be symmetric. This follows from Section \ref{sec:ch5:ier}, as every $p_{ij} = p_{ji}$ for all pairs of nodes $i$ and $j$. 
+
+Further, remember in Section \ref{sec:ch5:psd_block}, we found that when the block matrix for an $SBM_n(\vec z, B)$ random network was positive semi-definite, the probability matrix would be positive semi-definite, too. In this case, the block matrix is homophilic. Homophilic block matrices are always positive semi-definite, so the probability matrix for a homophilic block matrix of a simple network is both square-symmetric and positive semi-definite.
+
+This means that the probability matrix has an eigendecomposition:
+
+\begin{floatingbox}[h]\caption{The eigendecomposition for real, symmetric matrices}
+\label{box:ch6:evd}
+The \textit{eigendecomposition} of a real matrix $R$ decomposes it into two real matrices:
+\begin{align*}
+    R = Q\Lambda Q^\top.
+\end{align*}
+The matrices are:
+\begin{enumerate}
+    \item The eigenvectors: A unitary matrix $Q$. Its columns are the eigenvectors $\vec q_i$, and that $Q$ is unitary means that $\vec q_i^\top \vec q_i = 1$ for all $i$, and $\vec q_i \vec q_j = 0$ whenever $i \neq j$. There is one eigenvector for each node $i$, and each eigenvector is a $n$-dimensional column-vector.
+    \item The eigenvalues: A diagonal matrix $\Lambda$. Its diagonal entries $\lambda_{i}$ are the eigenvalues, and that $\Lambda$ is diagonal means that all of the off-diagonal entries are $0$. The eigenvalues are non-increasing, in that $\lambda_1 \geq \lambda_2 \geq \hdots \lambda_n$. 
+\end{enumerate}
+\end{floatingbox}
+For such a matrix, using properties of matrix multiplication we can also express the eigendecomposition like this:
+\begin{align*}
+    R &= \sum_{i = 1}^n \lambda_{i}\vec q_i \vec q_i^\top
+\end{align*}
+using the intuition built in \cite{Trefethen1997}. 
+
+When $R$ is positive semi-definite, there are two additional qualifiers. The first concerns the sign of the eigenvalues in Remark \ref{box:ch6:evd_nonneg}, in that all of the eigenvalues are going to be non-negative.
+\begin{floatingbox}[h]\caption{The eigendecomposition for real, positive semi-definite, symmetric matrices}
+\label{box:ch6:evd_nonneg}
+When $R$ is real, positive semi-definite, and symmetric, we further obtain that for every $i$, $\lambda_{i}\geq 0$ (the eigenvalues are non-negative).
+\end{floatingbox}
+So, the eigenvalues are always non-negative.
+
+Another interesting fact about the eigendecomposition that directly relates to this observation is that when the matrix $R$ is positive semi-definite and symmetric, the eigendecomposition can be used to deduce the matrix rank, as explained in Remark \ref{box:ch6:evd_rank}.
+
+\begin{floatingbox}[h]\caption{The eigendecomposition and matrix rank}
+\label{box:ch6:evd_rank}
+When $R$ is positive semi-definite and symmetric, the number of non-zero eigenvalues corresponds to the matrix rank of $R$.
+\end{floatingbox}
+So, when $R$ is rank $d$ where $d < n$ ($R$ is not \textit{full-rank}), is symmetric, and positive semi-definite, we have that:
+\begin{align*}
+    R &= \sum_{i = 1}^n \lambda_{i}\vec q_i \vec q_i^\top \\
+    &= \sum_{i = 1}^d \lambda_i \vec q_i \vec q_i^\top + \sum_{i = 1}^{d + 1}\lambda_i \vec q_i \vec q_i^\top \\
+    &= \sum_{i = 1}^d \lambda_i \vec q_i \vec q_i^\top. \numberthis \label{eqn:ch6:evd:e1}
+\end{align*}
+All that we did here was we used properties about the eigenvalues in conjunction with Remarks \ref{box:ch6:evd_nonneg} and \ref{box:ch6:evd_rank}:
+
+\begin{enumerate}
+    \item We separated the sum from $1$ to $n$ into the sum from $1$ to $d$ and $d + 1$ to $n$.
+    \item In light of Remark \ref{box:ch6:evd_rank}, since $R$ is rank $d$, $d$ of the eigenvalues must be non-zero, and $n - d$ of the eigenvalues must be zero.
+    \item Since the eigenvalues are ordered by Remark \ref{box:ch6:evd}, the last $n - d$ of the eigenvalues (corresponding to the eigenvalues from $d + 1$ up to $n$) are the ones that are equal to zero.
+\end{enumerate}
+
+So, when $R$ is rank $d$, we can reduce our focus from $Q$ and $\Lambda$ to $Q_d$ and $\Lambda_d$, where:
+\begin{align*}
+    Q_d &= \begin{bmatrix}
+        \uparrow & & \uparrow \\
+        \vec q_1 & \hdots & \vec q_d \\
+        \downarrow & & \downarrow
+    \end{bmatrix},\;\;\;\; \Lambda_d = \begin{bmatrix}
+        \lambda_1 & & \\
+        & \ddots & \\
+        & & \lambda_d
+    \end{bmatrix},
+\end{align*}
+where $Q_d$ is the $n \times d$ matrix consisting of the first $d$ columns of $Q$, and $\Lambda_d$ is the $d \times d$ diagonal matrix consisting of the $d$ non-zero eigenvalues of $R$.
+
+So, combining this with Equation \eqref{eqn:ch6:evd:e1} gives us that:
+\begin{align*}
+    R &= Q_d \Lambda_d Q_d^\top. \numberthis \label{eqn:ch6:evd:e2}
+\end{align*}
+
+Note further that since the eigenvalues are non-negative by Remark \ref{box:ch6:evd_nonneg} and $\Lambda_d$ is diagonal by Remark \ref{box:ch6:evd}, we can easily find a square-root matrix for it:
+\begin{align*}
+    \Lambda_d = \begin{bmatrix}
+        \lambda_{1} & & \\
+        & \ddots &  \\
+        &&\lambda_{d}
+    \end{bmatrix} &= \begin{bmatrix}
+        \sqrt{\lambda_{1}} & & \\
+        & \ddots &  \\
+        && \sqrt{\lambda_{d}}
+    \end{bmatrix}\begin{bmatrix}
+        \sqrt{\lambda_{1}} & & \\
+        & \ddots &  \\
+        && \sqrt{\lambda_{d}}
+    \end{bmatrix}.
+\end{align*}
+This matrix, which we will denote using our traditional notation of $\sqrt{\Lambda_d}$, is also diagonal, and its entries are just the square-roots of the non-zero eigenvalues. 
+
+Notice also that since $\Lambda$ is square and diagonal, that $\sqrt{\Lambda_d} = \sqrt{\Lambda_d}^\top$.
+
+Combining this with Equation \ref{eqn:ch6:evd:e2}:
+\begin{align*}
+    R &= Q_d\Lambda Q^\top \\
+    &= Q_d\sqrt{\Lambda_d} \sqrt{\Lambda_d}^\top Q^\top \\
+    &= Q_d\sqrt{\Lambda_d}\left(Q_d\sqrt{\Lambda_d}\right)^\top, \numberthis \label{eqn:ch6:evd:e4}
+\end{align*}
+where we just used the result from Equation \eqref{eqn:ch6:evd:e1}.
+
+\subsection{Conceptualizing the eigendecomposition with $RDPG_n(X)$ random networks}
+
+Since $X$ had $d$ columns, where $d$ was at most $n$, $X$ is a rank $d$ matrix as long as its columns are not scalar multiples of one another. The product of a matrix and its transpose has the same rank as the matrix itself, so $P = XX^\top$ is also rank $d$. Further, $RDPG_n(X)$ random networks have positive semi-definite symmetric probability matrices, so $P$ is rank $d$ where $d$ is the latent dimensionality, positive semi-definite, and symmetric. 
+
+This means that by Equation \ref{eqn:ch6:evd:e4}:
+\begin{align*}
+    P &= Q_d \sqrt{\Lambda_d}\left(Q_d \sqrt{\Lambda_d}\right)^\top \\
+    &= YY^\top,
+\end{align*}
+where $Y = Q_d \sqrt{\Lambda_d}$. 
+
+It was also the case that $P = XX^\top$. It might feel really easy at this point to conclude that $Y$ and $X$ are equal, because $P = YY^\top$ and $P = XX^\top$. If this were the case, then using the eigendecomposition, we found the latent positions of $P$. Unfortunately, there is a slight caveat.
+
+
+\subsection{Estimating latent positions with the singular value decomposition}
+
+To recap what we have learned, for an $RDPG_n(X)$ random network, where the latent position matrix $X$ is a $n \times d$-dimensional matrix with $d$ non-redundant columns:
+\begin{enumerate}
+    \item The probability matrix $P = XX^\top$ is rank $d$,
+    \item We can decompose the positive semi-definite probability matrix $P = XX^\top$ into $Q\Lambda Q^\top$, where $Q$ is the matrix whose columns are the eigenvectors of $P$, and $\Lambda$ is the diagonal matrix whose entries are the decreasing, non-negative singular values of $P$,
+    \item We can retain {only} the positive singular values and vectors of $P$ and obtain that $P = Q_d \Lambda_d Q_d^\top$ is a decomposition of $P$ into the matrices $Q_d$ which is the first $d$ eigenvectors of $P$ and $\Lambda_d$ which consists of only the first $d$ eigenvalues (and these eigenvalues will be positive), and
+    \item The latent position matrix $Y = Q_d \sqrt{\Lambda_d}$ is equivalent to the latent position matrix $X$, up to a rotation.
+\end{enumerate}
+
+This is conceptually interesting, but still doesn't really help us when we have a real network $A$, because in practice, we don't know the probability matrix $P$ (we only observe a network $A$ with nodes and edges, not probabilities). 
+
+In practice, $A$ is still symmetric, but it is not necessarily positive semi-definite. For an example, we could consider the adjacency matrix:
+\begin{align*}
+    A = \begin{bmatrix}
+        0 & 1 \\
+        1 & 0
+    \end{bmatrix}.
+\end{align*}
+Convince yourself that an eigendecomposition of $A$ is:
+\begin{align*}
+    Q &= \begin{bmatrix}
+        1 \\ 1
+    \end{bmatrix},\;\;\;\;\Lambda = \begin{bmatrix}
+        1 & \\
+        & -1
+    \end{bmatrix}.    
+\end{align*}
+Notice that $\lambda_2 < 0$, so the logic that we built above does not apply. This means that we cannot identify a real square-root matrix for $\Lambda$ (the square-root of $-1$ would be $i$, which is a complex value), so we could not just ``plug in'' the adjacency matrix to our results above to obtain a real latent position matrix. 
+
+For this, we will turn to the \textit{singular value decomposition}, explained in Remark \ref{box:ch6:svd}.
+
+\begin{floatingbox}[h]\caption{The singular value decomposition for square symmetric matrices}
+\label{box:ch6:svd}
+The \textit{singular value decomposition} of a real matrix $R$ decomposes it into three real matrices:
+\begin{align*}
+    R = U \Sigma V^\top.
+\end{align*}
+The matrices are:
+\begin{enumerate}
+    \item The left singular vectors: A unitary matrix $U$, whose columns $\vec u_i$ are called the left $n$ singular vectors. That it is unitary implies that $UU^\top = I_n$, the identity matrix.
+    \item The singular values: A diagonal matrix $\Sigma$, whose entries $\sigma_i$ are called the $n$ singular values. The singular values are arranged such that $\sigma_1 \geq \sigma_2 \geq \sigma_3 \geq ... \geq \sigma_n \geq 0$ (the entries are \textit{decreasing}, and are non-negative).
+    \item The right singular vectors: A unitary matrix $V$, whose columns $\vec v_i$ are called the left $n$ singular vectors. That it is unitary implies that $VV^\top = I_n$, the identity matrix.
+\end{enumerate}
+\end{floatingbox}
+
+Throughout this book, we will notate the singular value decomposition by \texttt{svd}.
+
+For a real symmetric matrix, this means that:
+\begin{align*}
+    R &= \sum_{i = 1}^n \sigma_i \vec u_i \vec v_i^\top.
+\end{align*}
+Like the eigendecomposition, for the \texttt{svd} the non-zero singular values will correspond to the rank of the matrix, so for a rank $d$ matrix:
+\begin{align*}
+    R &= \sum_{i = 1}^d \sigma_i \vec u_i \vec v_i^\top
+\end{align*}
+
+So, let's imagine now that $P$ (the probability matrix for an $RDPG_n(X)$ random network) has the decomposition $Q_d \Lambda Q_d^\top$, and an \texttt{svd} is $U \Sigma V^\top$.
+
+\subsubsection{Connecting the eigendecomposition with the \texttt{svd}}
+
+Remember that $Q_d$ is a matrix of eigenvectors, and consequently has orthonormal columns.
+
+This gives us a key observation for our purposes.
+\begin{floatingbox}[h]\caption{Orthonormalizing a matrix with orthonormal columns via the Gram-Schmidt process}
+\label{box:ch6:gram}
+Suppose that $Q_d$ is a matrix with $n$ rows and $d$ columns which are orthonormal. Then there exists a matrix $U$ which has $n$ rows and $n - d$ columns, where the matrix $Q_d^{(U)}$ defined as:
+\begin{align*}
+    Q_d^{(U)} = \begin{bmatrix}
+        Q_d & U
+    \end{bmatrix} = \begin{bmatrix}
+        \uparrow & & \uparrow &  \uparrow & & \uparrow \\
+        \vec q_1 & \hdots & \vec q_d & \vec u_1 & \hdots & \vec u_{n - d} \\
+        \downarrow & & \downarrow & \downarrow & & \downarrow
+    \end{bmatrix}
+\end{align*}
+which is square and orthonormal.
+
+This matrix $U$ can be found through the Gram-Schmidt process.
+\end{floatingbox}
+This key linear algebra result will allow us to make a very important observation for our purposes. Notice that since $Q_d^{(U)}$ is square and orthonormal, that:
+\begin{align*}
+    Q_d^{(U)}^\top Q_d^{(U)} &= \begin{bmatrix}
+        Q_d & U 
+    \end{bmatrix}^\top\begin{bmatrix}
+        Q_d & U 
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        Q_d^\top \\ U^\top
+    \end{bmatrix}\begin{bmatrix}
+        Q_d & U
+    \end{bmatrix} \\
+    &= \begin{bmatrix}
+        Q_d^\top Q_d & Q_d^\top U \\
+        U^\top Q_d & U^\top U
+    \end{bmatrix} \numberthis \label{eqn:ch6:svd:e1} \\
+    &= I_n = \begin{bmatrix}
+        I_d & 0_{d \times n - d} \\
+        0 _{n - d \times d} & I_{n - d}
+    \end{bmatrix}, \numberthis \label{eqn:ch6:svd:e2}
+\end{align*}
+so simply by matching up the corresponding blocks of Equation \eqref{eqn:ch6:svd:e1} and Equation \ref{eqn:ch6:svd:e2}:
+\begin{enumerate}
+    \item $Q_d Q_d^\top = I_d$,
+    \item $Q_d^\top U = 0_{d \times n - d}$,
+    \item $U^\top Q_d = 0_{n - d \times d}$,
+    \item $UU^\top = I_{n - d}$.
+\end{enumerate}
+
+
+Using these facts we can easily deduce an interesting corollary:
+\begin{corollary}[The matrix $U$ whose columns orthonormalize the columns of $Q_d$ is not unique]
+If $Q_d$ is a matrix with $d$ orthonormal columns and $U$ is a matrix whose columns orthonormalize the columns of $Q_d$, $U$ is not unique. This means that there is another matrix $V$ whose columns also orthonormalize the columns of $Q_d$. Consequently, for such a matrix $V$, $Q_d^{(V)}$ is also square and orthonormal.
+\end{corollary}
+We'll do a very short proof of this result, so that you can convince yourself this is the case. This is the most math-intensive result in this book, so bear with us. 
+\begin{proof}Suppose that $W$ is a $n - d$ dimensional rotation matrix, and let $V = UW$. Then:
+\begin{enumerate}
+    \item $Q_d Q_d^\top = I_d$,
+    \item $Q_d^\top V = 0_{d \times n - d}$, because:
+    \begin{align*}
+        Q_d^\top V &= Q_d U W \\
+        &= (Q_d U)W \\
+        &= 0_{d \times n - d} W, 
+    \end{align*}
+    which is because the columns of $U$ orthonormalize the columns of $Q_d$. Then, since the product of a matrix and the zero-matrix is the zero-matrix:
+    \begin{align*}
+       Q_d^\top V &= 0_{d \times n - d}
+    \end{align*}
+    \item $V^\top Q_d = 0_{n - d \times d}$, because:
+    \begin{align*}
+        V^\top Q_d &= (Q_d^\top)^\top \\
+        &= 0_{n - d \times d}^\top \\
+        &= 0_{d \times n - d}
+    \end{align*}
+    Which follows directly from above, and
+    \item $VV^\top = I_{n - d}$, because:
+    \begin{align*}
+        V^\top V &= \left(UW\right)^\top UW \\
+        &= W^\top U^\top U W \\
+        &= W^\top I_{n - d}W \\
+        &= W^\top W,
+    \end{align*}
+    because a matrix times the identity returns the matrix itself, and therefore:
+    \begin{align*}
+        V^\top V &= I_{n - d}
+    \end{align*}
+    because the matrix $W$ is a $n - d$-dimensional rotation matrix, so $W^\top W = I_{n - d}$.
+\end{enumerate}
+Therefore, $Q_d^{(V)}$ where $V$ is any rotation of $U$ is also square and orthonormal, because $Q_d^{(V)}^\top Q_d^{(V)} = I_n$.
+\end{proof}
+
+This next result is where the light bulbs will start to go off:
+\begin{corollary}[Equivalence of top $d$ left and right singular vectors]
+Suppose that $P$ is a square, symmetric, and positive semi-definite matrix which is rank $d$. Then the top $d$ left and right singular vectors will be equal, and the remaining singular vectors will be equal up to a rotation.
+\end{corollary}
+\begin{proof}
+Remember that if $P$ is rank $d$ and is square, symmetric, and positive semi-definite, that it has the eigendecomposition $P = Q\Lambda Q^\top$ and the matrix decomposition $Q_d \Lambda_d Q_d^\top$. Remember that by definition, $\Lambda_d$ is a diagonal matrix whose entries $\lambda_i$ are positive. 
+
+Extend $Q_d$ to form the square orthonormal matrices $Q_d^{(U)}$ and $Q_d^{(V)}$, where $U$ and $V$ are equal up to a rotation, using Remark \ref{box:ch6:gram}.
+
+Let $\Sigma$ be a diagonal matrix whose first $d$ entries are $\sigma_i = \lambda_i$ for the first $d$ non-zero eigenvalues of $\Lambda$, and $0$ for the remaining $n - d$ diagonal entries.
+
+Then using Equation \eqref{eqn:ch6:evd:e1}, $P$ can be expressed as:
+\begin{align*}
+    P &= \sum_{i = 1}^d \lambda_i \vec q_i \vec q_i^\top \\
+    &= \sum_{ i =1}^d \lambda_i \vec q_i \vec q_i^\top + 0 \\
+    &= \sum_{i = 1}^d \lambda_i \vec q_i \vec q_i^\top + \sum_{i = d + 1}^n 0 \\
+    &= \sum_{i = 1}^d \sigma_i \vec q_i \vec q_i^\top + \sum_{i = d + 1}^n \sigma_i \vec u_{i - d}\vec v_{i - d}^\top,
+\end{align*}
+which is because $\sigma_i = \lambda_i > 0$ for all $i \leq d$, and $\sigma_i = 0$ for all $i > d$. 
+
+Note that this is equivalent to writing that:
+\begin{align*}
+    P &= Q_d^{(U)}\Sigma Q_d^{(V)}^\top,
+\end{align*}
+where $Q_d^{(U)}$ and $Q_d^{(V)}$ are square and orthonormal, and $\Sigma$ is a diagonal matrix whose entries are non-negative.
+
+Then $P = Q_d^{(U)}\Sigma Q_d^{(V)}$ is a \texttt{svd} of $P$. 
+\end{proof}

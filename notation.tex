@@ -1,0 +1,62 @@
+% notation.tex
+% 2011/02/03, v1.10
+
+\chapter*{Terminology}
+
+In this section, we outline some background terminology which will come up repeatedly throughout the book. This section attempts to standardize some background material that we think is useful going in.
+
+\paragraph{Mathematical concepts}
+
+\begin{tabular}{p{2cm} | p{4.5cm} | p{4cm}}
+\hline
+    Symbol & Definition & Description/Example \\
+    \hline
+     $x$ & A scalar number & $x = 5$   \\
+     $\vec x$ & A column vector & $\vec x = \begin{bmatrix}5 \\ 2 \\ 6\end{bmatrix}$ \\
+     $x_i$ & the $i^{th}$ element of a column vector & $x_2 = 2$ \\
+     $\mathcal X$ & A set & $\mathcal I = \{1, 2\}$\\
+     $\sum_{i \in \mathcal N} x_i$ & A sum indexed by a set $\mathcal N$ & $\sum_{i \in \mathcal I} x_i\equiv \sum_{i = 1}^2 x_i = 7$ \\
+     $\prod_{i \in \mathcal N}x_i$ & A product indexed by a set $\mathcal N$ & $\prod_{i \in \mathcal I} x_i \equiv \prod_{i = 1}^2 x_i = 10$ \\
+     $Y$ & A matrix & $Y = \begin{bmatrix}1 & 2 \\ 3 & 4\end{bmatrix}$ \\
+     $y_{ij}$ & The $(i, j)^{th}$ element of a matrix & $y_{22} = 4$ \\
+     \hline
+\end{tabular}
+
+
+\paragraph{Mathematical operations}
+
+\begin{tabular}{p{2cm} | p{4.5cm} | p{4cm}}
+\hline
+    Operation & Name & Definition \\
+    \hline
+     $\vec x^\top \vec y$ & The Euclidean inner product & $\sum_{i = 1}^n x_i y_i$ \\
+     $C = AB$ & Matrix multiplication & $c_{ij} = \sum_{k = 1}^n a_{ik} b_{kl}$ \\
+     $||\vec x||_k$ & The $k$-norm of $\vec x$ & $\left(\sum_{i = 1}^n |x_i|^k\right)^{\frac{1}{k}}$ \\
+     $||\vec x - \vec y||_2$ & The Euclidean distance between $\vec x$ and $\vec y$ & $\sqrt{\sum_{i = 1}^n (x_i - y_i)^2}$ \\
+     $||X||_F$ & The Frobenius norm of $X$ & $\sqrt{\sum_{i = 1}^r \sum_{j = 1}^c x_{ij}^2}$ \\
+     \hline
+\end{tabular}
+
+\paragraph{Probability and statistics concepts}
+
+For most of this work, we will assume a fairly limited background in probability and statistics. You should have a general concept of randomness, and know what a random variable is (for example, a Normal or Gaussian random variable, or a Bernoulli ``coin flip'' random variable). If you haven't seen these in a while, see if you can get through the summaries of the pages for ``random variable'', ``normal distribution'', and ``bernoulli distribution'' on wikipedia. We don't think that you will need any of the detailed technical knowledge on the pages beyond having intuition for what these concepts are. The notation that we will use in this book is:
+
+\begin{tabular}{p{2cm} | p{4cm} | p{4cm}}
+\hline
+    Symbol & Explanation & Example \\
+    \hline
+    $\mathbf x$ & A random variable & $\mathbf x$ takes the value $0$ or $1$ with probability $0.5$\\
+    $\vec{\mathbf y}$ & A random vector & $\vec{\mathbf y} = \begin{bmatrix}
+         {\mathbf y}_1 \\ {\mathbf y}_2
+     \end{bmatrix}$ \\
+    $\mathbf Z$ & A random matrix & $\mathbf Z = \begin{bmatrix}\mathbf z_{11} & \mathbf z_{12} \\ \mathbf z_{21} & \mathbf z_{22}\end{bmatrix}$ \\
+    $Pr(A)$ & Probability that an event $A$ happens & $Pr(\mathbf x = 1) = 0.5$ \\
+    $Bern(p)$ & The Bernoulli distribution with probability $p$ & If $\mathbf x$ is a $Bern(p)$ random variable, then $Pr(\mathbf x = 1) = p$, and $Pr(\mathbf x = 0) = 1-p$ \\
+    \hline
+\end{tabular}
+
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\endinput

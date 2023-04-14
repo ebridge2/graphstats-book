@@ -1,0 +1,237 @@
+% EngCguide.tex
+% for the suite of standard Cambridge designs
+% 2011/02/03, v1.10
+
+\NeedsTeXFormat{LaTeX2e}[1996/06/01]
+
+\documentclass{EngC}
+% \documentclass[multi]{EngC} % multi-contributor option
+% \documentclass[prodtf]{EngC}% if you have helvetica neue condensed fonts
+
+\usepackage[rightcaption,raggedright]{sidecap}% for side captions
+\usepackage{framed}         % for floatingboxes
+\usepackage{soul}           % for letterspacing in theorem-style headings
+
+% for the Harvard author-date referencing system
+% \usepackage[agsm]{harvard}
+
+% if you are using either vancouver.bst or IEEEtran.bst and wish to remove
+% square braces in the reference list, uncomment the line below
+\removesquarebraces
+
+\newcommand{\ttscale}{s*[0.9]}
+\usepackage{rotating}
+\usepackage{floatpag}
+\rotfloatpagestyle{empty}
+
+% \usepackage{amsmath}% if you are using this package,
+                  % it must be loaded before amsthm.sty
+\usepackage{amsthm}
+\usepackage{amsmath}
+% \usepackage{txfonts}% times font (used to produce EngCguide.pdf)
+                  % this package must be loaded after amsthm.sty
+\usepackage{graphicx}
+
+% indexes
+% uncomment the relevant set of commands
+
+% for a single index
+% \usepackage{makeidx}
+% \makeindex
+
+% for multiple indexes using multind.sty
+\usepackage{multind}\ProvidesPackage{multind}
+\makeindex{authors}
+\makeindex{subject}
+\usepackage{enumitem}
+
+% for multiple indexes using index.sty
+% \usepackage{index}
+% \newindex{aut}{adx}{and}{Author index}
+% \makeindex
+
+\newcommand\cambridge{EngC}
+
+% see chapter 3 for details
+\theoremstyle{plain}% default
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{corollary}{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{condition}[theorem]{Condition}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[chapter]
+\newtheorem{notation}[remark]{Notation}
+\newtheorem*{case}{Case}
+
+\hyphenation{line-break line-breaks docu-ment triangle cambridge amsthdoc
+cambridgemods baseline-skip author authors cambridgestyle en-vir-on-ment polar}
+
+\usepackage[sectionbib]{natbib}
+\usepackage{chapterbib}
+\usepackage{listings,newtxtt}
+\usepackage[ruled,linesnumbered]{algorithm2e}
+
+\usepackage{color}
+\definecolor{lightgray}{rgb}{0.5,0.5,0.5}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{lightgray},
+  keywordstyle=\bfseries,
+  commentstyle=\color{lightgray},
+  stringstyle=\color{lightgray},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\lstdefinestyle{python}{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\footnotesize\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{lightgray},
+  keywordstyle=\bfseries,
+  commentstyle=\color{lightgray}\itshape,
+  stringstyle=\color{lightgray},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\lstdefinestyle{bash}{frame=tb,
+  language=bash,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{lightgray},
+  keywordstyle=\bfseries,
+  commentstyle=\color{lightgray}\itshape,
+  stringstyle=\color{lightgray},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\setcounter{tocdepth}{1}% the toc normally lists sections;
+% for the purposes of this document, this has been extended to subsections
+\usepackage[scaled=.8]{beramono}
+\setcounter{secnumdepth}{4}
+\usepackage{comment}
+\usepackage{amsfonts}
+
+
+\newcommand\smallO{
+  \mathchoice
+    {{\scriptstyle\mathcal{O}}}% \displaystyle
+    {{\scriptstyle\mathcal{O}}}% \textstyle
+    {{\scriptscriptstyle\mathcal{O}}}% \scriptstyle
+    {\scalebox{.7}{$\scriptscriptstyle\mathcal{O}$}}%\scriptscriptstyle
+  }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \includeonly{chap2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\begin{document}
+\title[]
+{Hands‐On Network Machine Learning}
+
+\author{Eric W. Bridgeford, Alexander R. Loftus, and Joshua T. Vogelstein\\[3\baselineskip]
+This guide was compiled using \hbox{\cambridge.cls \version}\\[\baselineskip]}
+
+\frontmatter
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+\listoffloatingboxes
+\listofcontributors
+% \editedlistofcontributors
+\include{authors}
+
+\include{preface}
+\include{notation}
+
+\mainmatter
+\part{Foundations}
+\label{p:found}
+\include{ch1}
+\include{ch2}
+
+\part{Representations}
+\label{p:rep}
+\include{ch4}
+\include{ch5}
+\include{ch6}
+
+\part{Applications}
+\label{p:app}
+\include{ch7}
+\include{ch8}
+\include{ch9}
+
+\part{Next Steps}
+\label{p:next}
+\include{ch10}
+
+\backmatter
+% if you only have one appendix, use \oneappendix instead of \appendix
+\appendix
+
+\include{ch11}
+\include{ch12}
+\include{ch13}
+\include{ch14}
+
+
+\endappendix
+
+% insert a blank line to the toc list
+\addtocontents{toc}{\vspace{\baselineskip}}
+\theendnotes
+
+% bibliography style files
+% if you are using harvard, the style is specified with the \usepackage command
+% \bibliographystyle{vancouver}% uncomment for vancouver style
+% \bibliographystyle{IEEEtran} % uncomment for IEEE style
+
+% \renewcommand{\refname}{Bibliography}% if you prefer this heading
+\bibliography{percolation}\label{refs}
+
+\cleardoublepage
+
+% indexes
+
+% for a single index
+% \printindex
+
+% for multiple indexes using multind.sty
+\printindex{authors}{Author index}
+\printindex{subject}{Subject index}
+
+% for multiple indexes using index.sty
+% \printindex[aut]
+% \printindex
+
+\end{document}
+\endinput

@@ -1,0 +1,25 @@
+\chapter{Where do we do from here?}
+\label{sec:ch10}
+
+Congratulations on making it to the final section of this book. Hopefully, you've learned a lot so far in your journey and how, armed with some statistical intuition and insight, you can bring new approaches to best visualize, represent, and apply network learning techniques to your work, research, personal musings, or any other domain in which you might come across network-valued data. If you enjoyed this book, we have great news: the field is in its infancy, and is simultaneously rapidly expanding. This means that there are a lot of directions that you can go from here to further your knowledge and keep up with the field of network machine learning. We focused a lot of this book on simple networks for simplicity, but most of the techniques described in here (the statistical models, spectral embeddings, and applications in particular) can be easily extended to more complicated networks. 
+
+Finally, there are many techniques that, in the interest of keeping the book as cohesive and concise as possible, we haven't quite covered yet! To finish this book off, we wanted to give you a brief introduction to some other flavors of machine learning approaches for use on networks. These techniques broadly can be described as \textit{graph neural networks} (or GNNs) for short, which leverage strategies from neural networks with network-valued data. Further, we have left off a very relevant piece of discussion for network data, which is a concept known as \textit{sparsity}, and we'll provide an introduction to this, too. 
+
+\begin{enumerate}
+    \item Section \ref{sec:ch10:gnns} introduces the concept behind a graph neural network, or a neural network for network (graph) data.
+    \item Section \ref{sec:ch10:diffusion} introduces diffusion-based approaches to understanding networks.
+    \item Section \ref{sec:ch10:sparsity} introduces the concept of sparsity in network data.
+    \item Section \ref{sec:ch10:next} provides some guidance on some additional areas of interest to explore for you to continue to develop as a network scientist.
+\end{enumerate}
+
+Basically, what the first two sections will do is focus on how, \textit{under the hood}, GNNs and diffusion-based approaches will construct latent representations for networks. In this sense, they \textit{implicitly} learn representations for network data, in that the representations is never explicitly sought or desired for most use-cases. Then, these implicit representations are transformed for desirable downstream applications, using neural networks and other strategies. In this sense, you can think of these strategies as \textit{extensions} of the approaches developed in the preceding sections, where many of the desirable intuitive steps that are taken for our preceding models can be used to \textit{conceptualize} what is going on internally in these representations. A successful reading of these sections will \textit{not} entail a comprehensive understanding of these techniques; it will hopefully situate you in the landscape some and whet your appetite to learn about these more on your own.
+
+Next, we provide some background on an advanced network concept, known as \textit{sparsity}. We think that if you have gotten through this book, you are probably ready to conceptualize sparsity in network data, which can be a big problem when deciding how to store and analyze your real networks. We'll introduce some of the basics here, and leave you with some references to check into if you want to learn more.
+
+\input{next/gnns}
+\input{next/diffusion}
+\input{next/sparsity}
+\input{next/next}
+
+\bibliographystyle{vancouver}
+\bibliography{references}

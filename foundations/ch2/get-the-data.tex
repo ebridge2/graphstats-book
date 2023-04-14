@@ -1,0 +1,295 @@
+\section{Getting the data}
+\label{sec:ch2:getdata}
+
+For this section, you will start to get your hands dirty with some real network datasets. Don't be afraid to walk through these examples with your laptop in a jupyter notebook. To ease your ability to interact directly with the code of this book, we've developed a standalone \texttt{docker} container that you can use. 
+
+\subsection{Interacting with the book via \texttt{docker}}
+
+Getting software to run across multiple operating systems, particularly software with lots of dependencies, can range from difficult to impossible. While most of the packages required to run the contents of this book can be installed relatively easily via a combination of git, pip, and virtual environments, the easiest and fastest way to get you coding and interacting with real \texttt{python} code is \texttt{docker}. 
+
+\texttt{docker} is a containerization utility that, in effect, allows you to run standalone software in a separate area of your computer (called a {docker container}), that allows software to operate without conflicting with your local operating system. This means that you can, with a very small number of button clicks, create deployable software that thousands of people can use at the drop of a hat. It might not be better than sliced bread, but it might be the next best thing! 
+
+We aren't going to sit here and pretend to be the experts on docker, but fortunately the people over at docker won't leave you on your own for that one! To install docker, check out their installation guide at \cite{dockerinstall}. 
+
+\subsubsection{Obtaining the docker container for the textbook}
+
+Once you have docker installed on your computer, you can obtain the docker container for the book relatively easily. If you have a ubuntu/mac operating system and the docker daemon running on your computer, you can open up a terminal session and type the following command:
+
+\begin{lstlisting}[style=bash]
+$ docker pull neurodata/graph-stats-book
+\end{lstlisting}
+
+which will fetch the docker container for the book from \cite{thisbookdocker}.
+
+This docker container contains all of the dependencies needed to run the code within this book, and will allow you to use the book in conjunction with \texttt{jupyter}. \texttt{jupyter} is a lightweight, web-based interactive computing platform that you can access through your web browser at \texttt{localhost:<port>}, where \texttt{<port>} is the port you provide to the container for execution. You can start the docker container like this:
+
+\begin{lstlisting}[style=bash]
+$ docker run -it --rm -p <port>:8888 neurodata/graph-stats-book \
+    jupyter-lab --ip=0.0.0.0 --port=8888 /home/book/ \
+    --NotebookApp.token="graphbook"
+\end{lstlisting}
+
+Which will launch a \texttt{jupyter-lab} session, and {should} automatically log you into the session in your browser. If it does not, open up a browser of your choice, and go to \texttt{localhost:<port>}, where you will be prompted to enter the log-in password for your session. If you don't know what port to choose, it's probably easiest to try \texttt{8888}, and if that doesn't work, \texttt{8889}, and keep working up until you find an open port. The port is so that your browser can communicate with the jupyter session inside the docker container (which runs jupyter internally on port \texttt{8888}), and so you are basically telling your computer that your port \texttt{<port>} should "tie in" to port \texttt{8888} in the docker container. The password for the session is \texttt{graphbook}, or any password you choose to enter.
+
+If you don't want to use the docker container, that's fine too: you can follow the instructions at the end in Section \ref{sec:ch2:get:install} for more details. 
+
+\subsection{Downloading the data}
+
+When you work with network data, it is rarely the case that the {raw data} that you will use is already a network. The \textit{raw data} is the least processed version of the data for your project, and is the information upon which the rest of your data is {derived}. A \textit{derivative} is a piece of data or information that is {derived} from the raw data. Consider, for instance, that you are investigating emailing trends for a company, and trying to see whether employees tend to email their team members more or less frequently than people outside of their team. In this case, your raw data might be a list of emails, coupled with the sender, and the recipient, of each email. You might be responsible for {preprocessing} this data to acquire a network derivative for your later analyses.
+
+In this section, you won't worry just yet about preprocessing a raw dataset, and will instead start with some pre-prepared data. You will be working with brain networks from a human functional MRI connectome. You could navigate over to the \texttt{neurodata} website and download the file directly, but it tends to be useful to get used to how to do this programmatically. This is because if the data changes, you might want your analysis to automatically update and pertain to the latest and best version of the data at the time you execute your function. Further, if you intend your code to be reproducible, having a function which downloads and prepares the data in a way which the computer can use will simplify the process of disseminating your work. 
+
+To begin, we'll start with a code snippet which fetches the required data for our analysis:
+
+\begin{lstlisting}[style=python]
+import os
+import urllib
+import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
+from graspologic.utils import import_edgelist
+import numpy as np
+import glob
+from tqdm import tqdm
+
+# the AWS bucket the data is stored in
+BUCKET_ROOT = "open-neurodata"
+parcellation = "Schaefer400"
+FMRI_PREFIX = "m2g/Functional/BNU1-11-12-20-m2g-func/Connectomes/" + parcellation + "_space-MNI152NLin6_res-2x2x2.nii.gz/"
+FMRI_PATH = os.path.join("datasets", "fmri")  # the output folder
+DS_KEY = "abs_edgelist"  # correlation matrices for the networks to exclude
+
+def fetch_fmri_data(bucket=BUCKET_ROOT, fmri_prefix=FMRI_PREFIX,
+                    output=FMRI_PATH, name=DS_KEY):
+    """
+    A function to fetch fMRI connectomes from AWS S3.
+    """
+    # check that output directory exists
+    if not os.path.isdir(FMRI_PATH):
+        os.makedirs(FMRI_PATH)
+    # start boto3 session anonymously
+    s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+    # obtain the filenames
+    bucket_conts = s3.list_objects(Bucket=bucket, 
+                    Prefix=fmri_prefix)["Contents"]
+    for s3_key in tqdm(bucket_conts):
+        # get the filename
+        s3_object = s3_key['Key']
+        # verify that we are grabbing the right file
+        if name not in s3_object:
+            op_fname = os.path.join(FMRI_PATH, str(s3_object.split('/')[-1]))
+            if not os.path.exists(op_fname):
+                s3.download_file(bucket, s3_object, op_fname)
+
+def read_fmri_data(path=FMRI_PATH):
+    """
+    A function which loads the connectomes as adjacency matrices.
+    """
+    # import edgelists with graspologic
+    # edgelists will be all of the files that end in a csv
+    networks = [import_edgelist(fname) for fname in tqdm(glob.glob(os.path.join(path, "*.csv")))]
+    return np.stack(networks, axis=0)
+\end{lstlisting}
+
+Now when you call \texttt{fetch\_fmri\_data()}, it creates a new directory called \texttt{datasets/fmri} in your workspace, and downloads the adjacency matrices, the standard way to represent a graph as a mathematical object, into your local directory \texttt{datasets/fmri}.
+
+Next, we'll try to load the dataset using the \texttt{graspologic} utility, \texttt{import\_edgelist()}:
+
+\begin{lstlisting}[style=python]
+fetch_fmri_data()
+As = read_fmri_data()
+\end{lstlisting}
+
+Next, let's learn some things about just one of the adjacency matrices. In network machine learning, when dealing with a new dataset, our recommendation is to {always}, {always}, start with visualization. You typically visualize network data using a heatmap. The resulting plot is shown in Figure \ref{fig:ch2:raw}(A).
+
+\begin{lstlisting}[style=python]
+from graphbook_code import heatmap
+
+A = As[0]
+ax = heatmap(A, vmin=0, vmax=1, title="Heatmap of Functional Connectome")
+\end{lstlisting}
+
+What this has done is it has plotted the adjacency matrix for the functional connectome of a human. The nodes of this network are numbered in sequential order. A heatmap is a network visualization in which the $x$ and $y$ coordinates of a given entry in the matrix indicate the pair of nodes an edge is connected to, and the color for the $(x,y)$ point in the figure indicates the weight of the edge between nodes $x$ and $y$. The edge weight is stronger if the pair of brain areas are active together more, and lower if the pair of brain areas tend to be active together less. This is real data, generated from actual fMRI scans!
+
+One thing that we can notice from this plot is that a lot of these edges have tiny weights. Let's explore this a little bit further. 
+
+A useful summary of the network is to look at a histogram for the edge-weights. A histogram shows the number of edges (on the vertical axis) which have a given edge weight range (indicated by the width of a particular bar on the horizontal axis). You can call this directly on the adjacency matrix (albeit flattened), and it will plot a histogram of the edge weights. We will do this using seaborn's \texttt{histplot()}:
+
+\begin{lstlisting}[style=python]
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+ax = sns.histplot(A.flatten(), bins=50)
+ax.set_xlabel("Edge weight")
+ax.set_title("Histogram of functional connectome edge-weights")
+\end{lstlisting}
+A plot of the adjacency matrix's edge weights is shown in Figure \ref{fig:ch2:raw}(B). A lot of the edge-weights tend to be right around the $0.1$ to $0.5$ range, which tells us that, in general, the nodes of the network are {slightly correlated}. This means that, in general, when some node tends to be active, other nodes also tend to be active. If this were not the case, the histogram would be a bit more centered around $0.0$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{foundations/ch2/Images/raw.png}
+    \caption[Visualizing connectome data]{\textbf{(A)} a raw connectome, \textbf{(B)} the raw connectome edge-weight histogram.}
+    \label{fig:ch2:raw}
+\end{figure}
+
+\subsection{Create the workspace}
+\label{sec:ch2:get:install}
+\subsubsection{Installing the latest version of \texttt{python}}
+
+To begin, you will need a suitable instance of \texttt{python} installed. For this book, we'll use \texttt{python 3.8}, but the most advanced version of \texttt{python3} at the time you are reading should do the trick. We will assume that you are using a Linux or UNIX-like operating system, such as OSX. If you have a Windows computer, we would recommend that you use the Docker container or the Linux subsystem module, which you can find more details about in \cite{windowsss} to interact with the codebase. Once you have this set up and up and running, you can follow the instructions below for a Debian distribution of Linux.
+
+Once you have your computer handy, you can run the following command, which should show (ideally) \texttt{python3} has a version $\geq$\texttt{3.8.0}:
+
+\begin{lstlisting}[style=bash]
+$ python3 -V
+Python 3.8.0
+\end{lstlisting}
+
+and verify that the \texttt{python} package manager, \texttt{pip}, is installed:
+
+\begin{lstlisting}[style=bash]
+$ python3 -m pip --version
+pip 22.0.3 from /<user>/.virtualenvs/graph-book/lib/python3.8/site-packages/pip (python 3.8)
+\end{lstlisting}
+
+This command will print the version of \texttt{python3} and \texttt{pip} that your computer currently has installed. If it returns any version below \texttt{3.8.x} or says "command not found", you will need to obtain and install \texttt{python3} (along with the developer libraries and the package manager, \texttt{pip}) before continuing. The developer libraries are critical to ensuring that code upon which packages in \texttt{python} are based (such as the popular \texttt{numpy} numerical package) have the appropriate libraries needed to execute code written in {other} programming languages, which might be faster (for instance, \texttt{C}). 
+
+If you have an apple computer using the OSX operating system, you can download and install an appropriate version of \texttt{python} using the \texttt{python3} guide for OSX at \cite{pythonmac} by first configuring \texttt{homebrew} and then installing python. This will also include \texttt{pip}. 
+
+If you are using a Debian-based Linux distribution (such as Ubuntu), you can install \texttt{python3} along with the developer libraries and \texttt{pip} by typing:
+
+\begin{lstlisting}[style=bash]
+$ sudo apt-get update
+$ sudo apt-get install -y python3-dev python3-pip
+\end{lstlisting}
+
+If you have a CentOS distribution (such as CentOS or Red Hat), you can install python3 along with the developer libraries and \texttt{pip} by typing:
+
+\begin{lstlisting}[style=bash]
+$ sudo yum update
+$ sudo yum install -y python3-devel python3-pip
+\end{lstlisting}
+
+You should make sure that you have the most recent version of \texttt{pip} installed. To upgrade the current \texttt{pip} package, type:
+
+\begin{lstlisting}[style=bash]
+$ python3 -m pip install --user -U pip
+Collecting pip
+[...]
+Successfully installed pip-22.0.3
+\end{lstlisting}
+
+You now have \texttt{python3}, the \texttt{python} package manager \texttt{pip}, and the \texttt{python3} developer libraries installed on your computer. 
+
+\subsubsection{Installing fortran}
+
+Some of the packages that you will use in the book require the system to have an appropriate version of a programming language called FORTRAN installed. FORTRAN is a numerical programming language which is very fast for mathematical computations. Fortran is included in the package \texttt{gcc}, which is a collection of compilers for many programming languages.
+
+If you have a MAC system, you can install \texttt{gfortran} with the following command:
+
+\begin{lstlisting}[style=bash]
+$ sudo brew install gcc
+\end{lstlisting}
+
+If you have a Debian system, you can install \texttt{gfortran} with the following command:
+
+\begin{lstlisting}[style=bash]
+$ sudo apt-get update
+$ sudo apt-get install gcc
+\end{lstlisting}
+
+If you have a CentOS system, you can install \texttt{gfortran} with the following command:
+
+\begin{lstlisting}[style=bash]
+$ sudo yum update
+$ sudo yum install gcc
+\end{lstlisting}
+
+\subsubsection{Establishing a virtual environment}
+
+It is often good practice in \texttt{python} to avoid installing many packages directly to \texttt{python3} itself. This is because packages in \texttt{python} do not necessarily have the same dependencies, and particular projects might require package versions that conflict with other projects you are working on. For instance, I might have a homework assignment that works only with numpy version 1.18.1, but meanwhile, a work project needs numpy version 1.22.0. For this reason, you strongly encourage you to use virtual environments.
+
+To begin working with virtual environments in python, you will need to first obtain the \texttt{virtualenv} package:
+
+\begin{lstlisting}[style=bash]
+$ pip3 install virtualenv
+Collecting package virtualenv
+[...]
+Successfully installed virtualenv-20.13.1
+\end{lstlisting}
+
+Once you have \texttt{virtualenv} installed, you can create your first virtual environment in python. You will first make a directory in your home directory which will allow us to keep track of your virtual environments, and then you will make a new virtual environment for the book which uses \texttt{python3}:
+
+\begin{lstlisting}[style=bash]
+$ # create a new directory for virtual environments
+$ mkdir ~/.virtualenvs
+$ # make a new virtual environment using python3
+$ virtualenv -p python3 ~/.virtualenvs/graph-book
+\end{lstlisting}
+
+Every time you want to use run code for the book, you should first use the following command to activate the virtual environment:
+
+\begin{lstlisting}[style=bash]
+$ # activate the virtual env
+$ source ~/.virtualenv/bin/activate
+(graph-book) $ 
+\end{lstlisting}
+
+You should run this command before continuing to the next section.
+
+\subsubsection{Installing the dependencies for the book}
+
+Next, you need to install the \texttt{python} package dependencies for the book. Once you have your virtual environment activated, you will next want to grab the requirements file for the graph book, which can be obtained by typing:
+
+
+\begin{lstlisting}[style=bash]
+(graph-book) $ wget https://raw.githubusercontent.com/neurodata/graph-stats-book/master/requirements.txt
+\end{lstlisting}
+
+Next, you will want to install the appropriate \texttt{python} packages specified in the \texttt{requirements.txt} file, by typing:
+
+\begin{lstlisting}[style=bash]
+(graph-book) $ pip install -r requirements.txt
+\end{lstlisting}
+
+Since you are in a virtual environment, you no longer have to worry about making sure you are installing these to \texttt{python3} or \texttt{pip3}, since the virtual environment streamlines all of these function calls for us directly. Finally, you will need to install \texttt{jupyter-lab} and the ipython kernel, using the following commands:
+
+
+\begin{lstlisting}[style=bash]
+(graph-book) $ pip install jupyterlab ipykernel
+\end{lstlisting}
+
+We need to add your virtual environment to the ipython kernel so that jupyter lab can find it, which you can do by typing:
+
+
+\begin{lstlisting}[style=bash]
+(graph-book) $ python -m ipykernel install --user --name=graph-book
+Installed kernelspec myenv in /home/<user>/.local/share/jupyter/kernels/graph-book
+\end{lstlisting}
+
+This will ensure that packages you install to the \texttt{graph-book} virtual environment will be findable from within jupyter.
+
+\subsubsection{Setting up jupyter notebook}
+
+Now that you have all your packages installed, you can finally move to starting up a notebook. Let's begin by first launching jupyter lab:
+
+\begin{lstlisting}[style=bash]
+(graph-book) $ jupyter-lab
+
+\end{lstlisting}
+
+Next, you want to create a new notebook using the \texttt{graph-book} module.
+
+To verify that your notebook has the proper software installed, you will make a code cell which simply imports the \texttt{graspologic} package, by typing the following command in the top cell:
+
+\begin{lstlisting}[style=bash]
+import graspologic
+graspologic.__version__
+\end{lstlisting}
+
+and then pressing the \texttt{Shift} and \texttt{Enter} keys simultaneously. Note that this cell will take a few seconds to execute successfully.
+
+
+From this point forward, for each section of the book, you should be able to copy and paste code snippets section by section, and successfully reproduce the executable code contained within the book. You should take care to make sure that if you take this approach that you make sure to copy and paste all code that appears in the section, since there may be modules which are imported in above cells that are assumed to have been imported in later cells.
+
+\newpage

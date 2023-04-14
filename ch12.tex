@@ -1,0 +1,23 @@
+\chapter{Network Model Theory}
+\label{app:ch12}
+
+In this section, we'll do a much deeper dive into the intricacies of network modelling. It is important to note that the models you'll learn about here may sound a \textit{little} different from the models you saw earlier in the book, but this in intentional: in this section we'll be describing the models using far more statistically precise language. With this added language in hand, which may \textit{appear} cumbersome at first, you can describe a wide variety of variations of the models you learned about previously. You'll be able to more succinctly, and more directly, understand \textit{exactly what} is being modelled, what is being treated as random, and what is being treated as fixed. Many of the strategies that you learned about in previous sections, such as the latent position testing and latent distribution testing in Section \ref{sec:ch8:twosample} become a lot more digestable when you understand them as tests which assume slightly different statistical models. Let's get to it. In this section, you'll learn the following aspects:
+
+\begin{enumerate}
+    \item Section \ref{app:ch12:background} gives an introduction to the mathematical and probability concepts to be aware of before reading the remainder of the section.
+    \item Section \ref{app:ch12:foundation} gives the probabilistic foundations and motivations for graph models.
+    \item Section \ref{app:ch12:ers} introduces the Erd\"os-R\'enyi network model, and provides some key limitations that differentiate it from the stochastic block model.
+    \item Section \ref{app:ch12:sbms} introduces the stochastic block model and degree-corrected stochastic block model, and some useful properties about the nodes in various flavors of stochastic block models.
+    \item Section \ref{app:ch12:rdpg} introduces the Random Dot Product Graph.
+\end{enumerate}
+
+Throughout this section, we make use of results from a variety of papers, which are largely captured by \cite{Athreya2017Jan} and \cite{Chung2021Mar}.
+
+\input{appendix/ch12/background}
+\input{appendix/ch12/foundation}
+\input{appendix/ch12/er}
+\input{appendix/ch12/sbm}
+\input{appendix/ch12/rdpg}
+
+\bibliographystyle{vancouver}
+\bibliography{references}

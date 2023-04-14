@@ -1,0 +1,52 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{helvneue}[2010/11/09 Helvetica Neue EngC font support]
+\RequirePackage[LY1,T1]{fontenc}
+
+\def\helvneuesetup{\fontencoding{LY1}\fontfamily{hll}}
+
+% HelveticaNeueLTStd-LtCn  Helvetica Neue LT Std 47 Light Condensed
+% HelveticaNeueLTStd-LtCnO Helvetica Neue LT Std 47 Light Condensed Oblique
+
+\def\HelvNeueLtCond{\helvneuesetup % {LY1}{hll}{lc}{n}
+  \fontseries{lc}\fontshape{n}\selectfont
+}
+
+% HelveticaNeueLTStd-Cn  Helvetica Neue LT Std 57 Condensed
+% HelveticaNeueLTStd-CnO Helvetica Neue LT Std 57 Condensed Oblique
+
+\def\HelvNeueCond{\helvneuesetup % {LY1}{hll}{c}{n}
+  \fontseries{c}\fontshape{n}\selectfont
+}
+
+% HelveticaNeueLTStd-MdCn  Helvetica Neue LT Std 67 Medium Condensed
+% HelveticaNeueLTStd-MdCnO Helvetica Neue LT Std 67 Medium Condensed Oblique
+
+\def\HelvNeueMedCond{\helvneuesetup % {LY1}{hll}{mbc}{n}
+  \def\bfdefault{mbc}%
+  \fontseries{mbc}\fontshape{n}\selectfont
+}
+
+% HelveticaNeueLTStd-BdCn  Helvetica Neue LT Std 77 Bold Condensed
+% HelveticaNeueLTStd-BdCnO Helvetica Neue LT Std 77 Bold Condensed Oblique
+
+\def\HelvNeueBldCond{\helvneuesetup % {hll}{bc}{n}
+  \def\bfdefault{bc}%
+  \fontseries{bc}\fontshape{n}\selectfont
+}
+
+% HelveticaNeueLTStd-HvCn  Helvetica Neue LT Std 87 Heavy Condensed
+% HelveticaNeueLTStd-HvCnO Helvetica Neue LT Std 87 Heavy Condensed Oblique
+
+\def\HelvNeueHvyCond{\helvneuesetup % {LY1}{hll}{ebc}{n}
+  \def\bfdefault{ebc}%
+  \fontseries{ebc}\fontshape{n}\selectfont
+}
+
+% HelveticaNeueLTStd-ThCn  Helvetica Neue LT Std 37 Thin Condensed
+% HelveticaNeueLTStd-ThCnO Helvetica Neue LT Std 37 Thin Condensed Oblique
+
+\def\HelvNeueThinCond{\helvneuesetup % {LY1}{hll}{ulc}{n}
+  \fontseries{ulc}\fontshape{n}\selectfont
+}
+
+\endinput

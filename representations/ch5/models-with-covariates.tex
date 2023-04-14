@@ -1,0 +1,124 @@
+\section{Models with Covariates}
+\label{sec:ch5:multicovar}
+
+
+To conclude your learnings on network models, we're going to delve into a common problem in machine learning known as the classification problem. For each piece of data $x_i$ in your sample, you might often have another piece of information $y_i$ associated with this data which you think is associated with the data $x_i$ in some way. This additional information $y_i$ is known as the \textbf{class} of the $i^{th}$ item, and is a \textit{categorical variable} which takes values between $1$ and $Y$, where $Y$ is the total number of possible classes in your experiment. A \textbf{categorical variable} is a variable that can take one of a fixed set of possible values. Consider the case where you have the heights of a selection of people and aliens for a hypothetical sample. The data $x_i$ is the height of each individual $i$. $y_i$ indicates whether the $i^{th}$ individual is a person (1) or an alien (2). $y_i$ is a categorical variable because you chose people to be $1$ and aliens to be $2$ arbitrarily, and the total number of classes $Y$ is $2$. Your question of interest is the extent to which you can \textit{predict} the class for each individual (person or alien) using only their height $x_i$. 
+
+Now let's imagine that you have a collection of networks representing the brains of $100$ individuals $500,000$ years into the future (let's hope humanity makes it that long!). These individuals are all either humans who have persisted with life-as-normal on earth (earthlings), or astronauts who left for a planet with a different set of prominent colors and light content from Earth. The environment was extremely harsh, so there were evolutionary pressures on your astronauts towards people whose eyes could better adapt to the different set of colors and light on the new planet. 
+
+Each network has $5$ nodes, representing the sensory functions and modalities of the brain: the area responsible for sight (S), the area responsible for language (L), the area responsible for hearing/emotional expression (H/E), the area responsible for thinking/movement (T/M), and the area responsible for basic survival functions (such as heartbeat and breathing, MS). Edges represent whether pairs of brain areas can pass information to one another. In this case, you have observed pairs of data $(A^{(m)}, y_m)$, for $m$ from $1$ to $M=100$. Each adjacency matrix $A^{(m)}$ is a $5 \times 5$ matrix, and the indicator variable $y_m$ takes the value $1$ if the $m^{th}$ individual is an earthling, or $2$ if the $m^{th}$ individual is an astronaut. In this case, you want to predict the class for each individual (earthling or astronaut) using only their adjacency matrix $A^{(m)}$. You can see two example networks for the earthlings and the astronauts below:
+
+\begin{lstlisting}[style=python]
+from graspologic.simulations import sample_edges
+import numpy as np
+from graphbook_code import heatmap
+
+n = 5
+P_hum = np.random.beta(size=n*n, a=3, b=8).reshape(n, n)
+# networks are undirected, so symmetrize the probability matrix
+P_hum = (P_hum + P_hum.T)/2
+
+# networks are simple, so undirected
+P_hum = P_hum - np.diag(np.diag(P_hum))
+
+nodenames = ["Sight", "Language", "Hearing/\nEmotion", "Thinking/\nMovement", "Basic \nSurvival"]
+ssn = np.zeros((n, n))
+ssn[1:n,:] = 1
+ssn[:,1:n] = 1
+P_ast = np.copy(P_hum)
+
+# probabilities for signal edges are higher in astronauts than humans
+P_ast[ssn] = np.sqrt(P_ast[ssn])
+
+Ahum = sample_edges(P_hum)
+Aast = sample_edges(P_ast)
+\end{lstlisting}
+
+A plot which compares the two adjacency matrices is shown in Figure \ref{fig:ch5:ssg_samps}. Just looking at these two matrices, it's a little bit unclear how we can derive meaningful information about this problem, particularly with respect to the edges in the first column and the first row (corresponding to the node that we \textit{said} was different, the node responsible for ``sight''). Is there some way that we could ``pool'' across the networks, and see if perhaps we could gain insight by thinking about a property shared by all of the networks from a single class (astronaut vs. earthling)?
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{representations/ch5/Images/ssg_samps.png}
+    \caption[Two samples of adjacency matrices from the signal sub network model]{\textbf{(A)} a brain network of an earthling. \textbf{(B)} a brain network of an astronaut.}
+    \label{fig:ch5:ssg_samps}
+\end{figure}
+
+Remember that to devise a statistical model, you suppose each piece of data in your sample is an observation of a corresponding random variable. When you were dealing with multiple network models, this meant that for each network $A^{(m)}$ there was a random network $\mathbf A^{(m)}$, and that this random network was the data-generating process that we were observing $A^{(m)}$ from. Here, for each data pair $(A^{(m)}, y_m)$, there exists a corresponding random network $\mathbf A^{(m)}$ and a corresponding random class $\mathbf y_m$, where $(A^{(m)}, y_m)$ is a sample of $(\mathbf A^{(m)}, \mathbf y_m)$. So, for your multiple network model with covariates, you seek a model which describes both $\mathbf A^{(m)}$ and $\mathbf y_m$.
+\subsection{Signal Subnetwork Model}
+
+As it turns out, these astronauts are remarkably similar to the eathlings, except for one piece of information: the connections between the occipital lobe and all other lobes for the astronauts have a much higher chance of being connected. In other words, the \textit{subnetwork} comprised of edges incident the occipital lobe carry the \textit{signal disparity} between human and astronaut brains. This concept of a subnetwork was first explored in Section \ref{sec:ch4:prop-net:subnetwork}. 
+
+What this means is that, if you were to just compare the adjacency matrices themselves, you would end up looking at a lot of \textit{noise}, or edges which do not show any difference between the humans and the astronauts. In a fixed sample of earthlings and astronauts, you might find disparities between these noise edges, but these disparities are just because of the particular sample of humans and astronauts that you chose and are not representative of actual differences. Rather, what you want to do is identify the subset of edges and corresponding nodes, called the \textit{signal subnetwork}, which actually carry the \textit{signal}, the set of edges which show real differences between the earthlings and the astronauts. Below, we plot the probability matrices for earthlings and astronauts:
+
+\begin{lstlisting}[style=python]
+# plot prob. mtxs and the difference on same scale
+heatmap(P_hum, vmin=0, vmax=1)
+heatmap(P_ast, vmin=0, vmax=1)
+heatmap(P_hum - P_ast, vmin=0, vmax=1)
+\end{lstlisting}
+
+Which we examine in detail in Figure \ref{fig:ch5:ssg_pmtxs}. Notice that the \textit{entirety} of the disparity between earthlings and astronauts (in terms of their probability matrices) shown in Figure \ref{fig:ch5:ssg_ssn}(C) is captured by the edges which include a node involved in eyesight. You can observe this because the first row and column of the matrix (corresponding to the node for eyesight) is different between the two networks for all other pairs of nodes.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{representations/ch5/Images/ssg_pmtxs.png}
+    \caption[Probability matrices from two different classes]{\textbf{(A)} the probability matrix for brain networks of earthlings. \textbf{(B)} the probability matrix for brain networks of astronauts. \textbf{(C)} the difference between the probability matrices for astronauts and humans. Notice that the the area responsible for sight, SI, has very different connection probabilities with all other brain areas.}
+    \label{fig:ch5:ssg_pmtxs}
+\end{figure}
+
+We will attempt to do this using the \textit{signal subnetwork model}, which is a statistical model for adjacency matrices where you have a covariate. When you want to later decide whether a network is from an earthling or an astronaut, you want to look \textit{only} at the signal subnetwork, and ignore the rest of the network entirely.
+
+For the SSN model, the core idea is that for each edge in the network, the probability of an edge existing (or not existing) is either the same, or different, between the two classes. You capture this idea using the \textbf{signal subnetwork}. For an edge $(i, j)$ for classes $y$ (either $0$ or $1$), you will use the notation $p_{ij}^y$ to denote the probability of an edge existing in class $y$. 
+
+\subsubsection{Signal Subnetwork}
+
+The \textbf{signal subnetwork} \cite{Vogelstein2013Jul} is a collection of edges $\mathcal S$, which has edges $(i,j)$ where $i$ and $j$ are nodes in the network between $1$ and $n$, such that the following two conditions hold:
+
+\begin{enumerate}
+    \item For each edge which is in the signal subnetwork, the probability of an edge existing differs between classes $0$ and $1$. That is, if an edge $(i, j)$ is in the signal subnetwork $\mathcal S$, then there exist two classes $y$ and $y'$ where $p_{ij}^{y} \neq p_{ij}^{y'}$.
+    \item For each edge which is \textit{not} in the signal subnetwork, the probabilitty of an edge existing is the \textit{same} between classes $0$ and $1$. That is, if an edge $(i, j)$ is not in the signal subnetwork $\mathcal S$, then $p_{ij}^0 = p_{ij}^1$. For this reason, if an edge is not in the signal subnetwork, you will use the term $p_{ij} = p_{ij}^0 = p_{ij}^1 = ... = p_{ij}^Y$.
+\end{enumerate}
+
+This sounds a little complex, but it's really quite simple: the idea is just that the signal subnetwork is keeping track of the edges which have different probabilities for any pair of classes. For your earthlings versus astronauts example above, this amounts to the set of edges for which at least one node is the occipital lobe:
+
+\begin{lstlisting}[style=python]
+# plot the signal subnetwork
+ax = heatmap(ssn.astype(int))
+\end{lstlisting}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{representations/ch5/Images/ssg_ssn.png}
+    \caption[Signal subnetwork for earthling and astronaut examples]{\textbf{(A)} the difference between the earthling and astronaut probability matrices. \textbf{(B)} the signal subnetwork.}
+    \label{fig:ch5:ssg_ssn}
+\end{figure}
+
+A plot of the signal subnetwork is shown in Figure \ref{fig:ch5:ssg_ssn}(B), and is compared to the difference between the probability matrices for earthlings and astronauts in Figure \ref{fig:ch5:ssg_ssn}(A). Notice that the signal subnetwork includes \textit{all} edges in which the two probability matrices are different. 
+
+Now that we are familiar with the signal subnetwork $\mathcal S$, we can formally define the signal subnetwork model. For each random pair $(\mathbf A^{(m)}, y_m)$ of your $M$ total pairs, you first obtain a ``class assignment'' die with $Y$ total sides. For a given face of the dice $y$, the probability that the dice lands on side $Y$ is $\pi_y$. You flip the class assignment die, and if it lands on side $y$, then $\mathbf y_m$ takes the value $y$. Next, for each edge $(i,j)$ which is not in the signal subnetwork $\mathcal S$, you obtain a ``non-signal’’ coin which has a probability of $p_{ij}$ of landing on heads and $1 - p_{ij}$ of landing on tails. The edge $\mathbf a_{ij}$ exists if the coin lands on heads and does not exist if the coin lands on tails. Finally, for each edge $(i, j)$ which is in the signal subnetwork $\mathcal S$, you check which class $\mathbf y_m$ indicates. If $\mathbf y_m$ is class $y$, you obtain a ``signal’’ coin which has a probability of $p_{ij}^y$ of landing on heads, and a probability of $1 - p_{ij}^y$ of landing on tails. The edge $\mathbf a_{ij}$ exists if the coin lands on heads and does not exist if the coin lands on tails. In summary, say that a collection of random network/covariate pairs $\left\{(\mathbf A^{(1)}, \mathbf y_1), ..., (\mathbf A^{(M)}, \mathbf y_M)\right\}$ with $n$ nodes is $SSN_n(\pi_1, ..., \pi_Y, P^1, ..., P^Y, \mathcal S)$ if the following three conditions hold:
+1. For every edge $(i, j)$ which is in the signal subnetwork $\mathcal S$, then there exist at least two classes $y$ and $y'$ where $p_{ij}^y \neq p_{ij}^{y'}$.
+2. For every edge $(i, j)$ which is not in the signal subnetwork $\mathcal S$, then every edge probability $p_{ij}=p_{ij}^1 =...= p_{ij}^Y$. 
+3. conditional on the class $\mathbf y_m$ being $y$, then $\mathbf A^{(m)}$ is $IER_n(P^y)$, where $IER_n(P^y)$ is from Section \ref{sec:ch5:ier}.
+
+Next, let's learn how to simulate signal subnetworks.
+\subsection{How do you simulate samples of $SSN_n(\pi_1, ..., \pi_Y, P^1, ..., P^Y, \mathcal S)$ random networks?}
+
+The procedure below in Algorithm \ref{alg:ch5:ssn} produce for you a set of networks, $A^{(1)}, ..., A^{(M)}$, which have nodes and edges, where the underlying random networks $\left\{\mathbf A^{(1)},..., \mathbf A^{(M)}\right\}$ are $SSN_{n,M}(\pi_1,..., \pi_Y, P^1,..., P^Y, \mathcal S)$ random networks.
+
+
+\begin{algorithm}[h]\caption{Simulating a sample from an $SSN_{n, M}(\pi_1, ..., \pi_Y, P^1, ..., P^Y, \mathcal S)$ random network}
+\label{alg:ch5:ssn}
+\SetAlgoLined
+\KwData{$n$ a number of nodes\newline $M$ the total number of networks \newline $\pi_1,..., \pi_Y$ the probability of a network being from a given class \newline $P^1, ..., P^Y$ the probability matrix associated with each class \newline $\mathcal S$ the signal subnetwork}
+\KwResult{A collection of $M$ networks with $n$ nodes.}
+
+Obtain a dice with $Y$ sides, that has a $\pi_y$ chance of landing on the $y$ side.
+
+\For{$m$ in $1$:$M$} {
+    Flip the $Y$-sided die, and if it lands on side $y$, assign the item $m$ to class $y$.
+
+    Simulate an adjacency matrix $A^{(m)}$, using the procedure for an $IER_n(P^{(y)})$ network, in Algorithm \ref{alg:ch5:ier}.
+}
+
+\Return{$\left\{A^{(1)},...,A^{(M)}\right\}$}
+\end{algorithm}

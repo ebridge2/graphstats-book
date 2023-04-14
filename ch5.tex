@@ -1,0 +1,50 @@
+\chapter{Why use Statistical Models?}
+\label{sec:ch5}
+
+At the foundation of statistical inference is the statistical model. This concept can seem somewhat esoteric, and often times, the word "statistical model", we find, is a bit overused. However, it is extremely important to clarify exactly what a statistical model is, and what it isn't, so we hope to clear up some of those misconceptions here before we jump in. A statistical model is, at its core, {purely theoretical} in nature. Statistical models fit into the network learning pipeline like in Figure \ref{fig:ch5:netmodels}:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{representations/ch5/Images/network_modelling.png}
+    \caption[Network modelling schematic]{In this chapter, you will learn how to construct sets of assumptions about the network which underlies your network sample.}
+    \label{fig:ch5:netmodels}
+\end{figure}
+
+The reality is, the network you observe, which you learned how to describe in the previous chapter, is not {typically} the thing you want to learn about. Rather, you want to learn about the {system} which underlies the network you observed. To learn about the dynamics of this system is a three-step process: first, you need to assume some things about the system (this chapter); second, you need to learn representations of the network you see that will be useful to you (the next chapter), and finally, you need to learn how that representation can inform the assumptions you made about the system. This process can be boiled down quite a bit to how flipping a coin works. When you flip a coin, usually you don't know ahead of time whether that coin is going to land on heads or tails. Instead, you think that coin is going to land on heads or tails with some probability (usually, an even chance of landing on heads or tails, or a probability of $0.5$). If you flip the coin once and get heads, you don't think that coin is {only} going to ever land on heads: rather, you think that coin landed on heads because of some amount of random chance. 
+
+And herein, you just assumed a statistical model. You assumed that the outcome of your coin (the random object, here, that you are modelling) was heads or tails with some probability, and when you saw that outcome (the {sample} of the coin flip) you prescribed that outcome to one of the possible outcomes occurring. As you'll see briefly, network modelling is nearly the same, and for simple networks especially, is {almost exactly} the same as flipping coins. Throughout this chapter, you'll learn to think about each edge of the network as a particular coin. Remember that the edges for a simple (and consequently, {unweighted}) network either exist or they don't exist: this is exactly like a coin landing on heads or tails. The key difference is that the edges existing or not existing might happen at probabilities different from $0.5$; there might be a chance of $0.7$ that one edge exists, or $0.4$ that another edge exists. 
+
+When you construct models for networks, what you are going to do is prescribe sets of assumptions for how the coin for each edge behaves: are all of the edges in the network flipping coins with equal probability (do all the edges exist or not exist with the same chance)? Are there some groups of nodes whose edges all have the same probabilities? Are there other ways you can describe the probabilities that other edges exist or do not exist? 
+
+\begin{comment}
+We'll learn about the following models, which tend to be some of the more common simple network models for network learning:
+
+\begin{enumerate}
+    \item Section \ref{sec:ch5:er} covers the Erd\"os-R\'enyi (ER) random network, which is the simplest model for network data.
+    \item Section \ref{sec:ch5:sbm} covers the Stochastic Block Model (SBM), which is a model for network data that conveys community structure.
+    \item Section \ref{sec:ch5:rdpg} covers the Random Dot Product Graph (RDPG), which is a model which we will use later to conceptualize techniques to learn representations of network data.
+    \item Section \ref{sec:ch5:ier} covers the Inhomogeneous Erd\"os R\'enyi (IER) random network, which is the most complicated independent-edge network model.
+    \item Section \ref{sec:ch5:dcsbm} covers the degree-corrected SBM (DCSBM), which is an augmentation of the SBM that allows for some nodes to be more (or less) connected than others.
+    \item Section \ref{sec:ch5:psd_block} covers different types of block matrices for SBMs, and when these can be conceptualized using an RDPG.
+    \item Section \ref{sec:ch5:siem} covers the structured independent-edge model (SIEM), which will be used later to facilitate testing on groups of edges in the network.
+    \item Section \ref{sec:ch5:multi} covers network models for when we have more than one network.
+    \item Section \ref{sec:ch5:multicovar} covers the signal subnetwork (SSN) model, a model for when we have network-specific covariates.
+\end{enumerate}
+\end{comment}
+
+Network modelling can get pretty dicey in probability and statistical theory rather quickly. For this reason, for the main text of the book, we've tried to keep the level of statistical depth required as low as possible, so that you can focus more on the intuition and mathematical relationships and less on the statistical rigor. For the more technical readers, Appendix \ref{app:ch12} provides more in-depth coverage of statistical network models. In this appendix section, we cover rigorous, statistical, descriptions of the statistical models and other concepts such as the likelihood function.
+
+\newpage
+
+\input{representations/ch5/er}
+\input{representations/ch5/sbm}
+\input{representations/ch5/rdpg}
+\input{representations/ch5/ier}
+\input{representations/ch5/properties}
+\input{representations/ch5/dcsbm}
+\input{representations/ch5/indef_blockmatrix}
+\input{representations/ch5/siem}
+\input{representations/ch5/multi-network-models}
+\input{representations/ch5/models-with-covariates}
+
+\bibliographystyle{vancouver}
+\bibliography{references}

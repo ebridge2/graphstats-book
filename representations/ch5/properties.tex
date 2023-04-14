@@ -1,0 +1,198 @@
+\section{Properties of random networks}
+\label{sec:ch5:prop}
+
+In this section, we'll take a step back and appreciate some of the other descriptive properties that we can use to describe random networks. We will review many ideas that we discussed in Chapter \ref{sec:ch4}, which were properties and statistics that we calculate for networks. These ideas will be reformulated for random networks that you have learned about in this Chapter. 
+
+The key distinction is that unlike with networks that you observe (which have nodes and edges), random networks have nodes and potential edges which exist (or do not) with some probability. This means that properties of these networks will not be exact values; rather, they will be random quantities. However, we can still describe these random quantities using basic concepts from statistics. 
+
+\subsection{A quick recap of expected values}
+
+The principal result that we will use for this section is the expected value of binary quantities. If $\mathbf x$ is a random quantity that has the value $1$ with probability $p$ and $0$ with probability $1 - p$, $\mathbf x$ is what is known as Bernoulli distributed with probability $p$. This is basically the equivalent of a coin flip experiment, where a value of heads is recorded as a $1$, and a value of tails is recorded as a $0$. The coin may or may not be fair, in that the probability that it lands on heads might differ from $0.5$. 
+
+In these contexts, the outcome is not yet realized for the random quantity (it is random after all). Instead, we describe properties about the random quantity, which tell us information about how we expect this random quantity to behave. The one that we will be most interested in is known as the expected value, which is denoted as $\mathbb E[\cdot]$. The expected value of a binary ($0$ or $1$)-valued quantity $\mathbf x$ is:
+\begin{align*}
+    \mathbb E[\mathbf x] &= 0 Pr(\mathbf x = 0) + 1 Pr(\mathbf x = 1) \\
+    &= Pr(\mathbf x = 1).\numberthis\label{eqn:ch5:exp:binary}
+\end{align*}
+This can be informally thought of as the average value that the random quantity takes over infinitely many trials. 
+
+So, if a coin lands on heads (a value of $1$) with probability $0.75$, its expected value is $0.75$. 
+
+Another key result that we will need to know about expected values is that they behave linearly under finite sums. This simply means that if $\mathbf x$ and $\mathbf y$ are two finite quantities, that:
+\begin{align*}
+    \mathbb E[\mathbf x + \mathbf y] = \mathbb E[\mathbf x] + \mathbb E[\mathbf y].\numberthis\label{eqn:ch5:exp:linearity}
+\end{align*}
+So, if $\mathbf x$ is a coin flip that lands on heads with probability $0.75$ and $\mathbf y$ is a flip of a different coin that lands on heads with probability $0.25$, the expected value of their sum is $1.0$. Easy enough, right?
+
+Next up is the rescaling property of expected values. If $\alpha$ is a constant (a non-random quantity), then:
+\begin{align*}
+    \mathbb E[\alpha \mathbf x] &= \alpha \mathbb E[\mathbf x].\numberthis\label{eqn:ch5:exp:rescale}
+\end{align*}
+So, for instance, let's imagine that $\mathbf x$ is a coin flip that lands on heads with probability $0.75$. Let's say that we decide to play a game where, if the coin lands on heads, we give you $\$5$, but if it lands on tails you get $\$0$. Using this rule, notice that we could just multiply the value of the coin flip outcome by $5$ (if the coin lands on a $1$, or heads, the outcome is $5$, and if it lands on a $0$, or tails, the outcome is $5 \cdot 0 = 0$). Then the expected outcome is:
+\begin{align*}
+    \mathbb E[5 \mathbf x] &= 5 \mathbb E[\mathbf x] \\
+    &= 5 \cdot .75 = \frac{15}{4},
+\end{align*}
+and you are expected to make $\$\frac{15}{4}$ from this game.
+
+\subsection{Rethinking edge probabilities as expected values}
+
+The equation that you saw in Equation \eqref{eqn:ch5:exp:binary} should look very familiar to you. Remember that in a network, $\mathbf a_{ij}$ is just a binary quantity, just like $\mathbf x$.
+
+Remember that if $\mathbf A$ is a $IER_n(P)$ random network, that the probability matrix $P$ has entries $p_{ij}$ for each pair of nodes $i$ and $j$ that describe the probability that $\mathbf a_{ij}$ has a value of $1$.
+
+This means that we can compute the expected value of each adjacency in the network using the formula, as:
+\begin{align*}
+    \mathbb E[\mathbf a_{ij}] = p_{ij}.\numberthis\label{eqn:ch5:exp:prob}
+\end{align*}
+
+Crucially, this gives us the insight that the probability matrix can also be thought of as the expected value of the adjacency matrix for a random network:
+\begin{align*}
+    \mathbb E[\mathbf A] &= \begin{bmatrix}
+        \mathbb E[\mathbf a_{11}] & \hdots & \mathbb E[\mathbf a_{1n}] \\
+        \vdots & \ddots & \vdots \\
+        \mathbb E[\mathbf a_{n1}] & \hdots & \mathbb E[\mathbf a_{nn}]
+    \end{bmatrix} = P.
+\end{align*}
+
+\subsection{Random node degree}
+\label{sec:ch5:prop:rndeg}
+
+Remember that the degree of a node $i$ was defined as:
+\begin{align*}
+    d_i &= degree(i) = \sum_{j \neq i} a_{ij}.
+\end{align*}
+Similarly, the \textit{random node degree} for a random network $\mathbf A$ is defined as:
+\begin{align*}
+    \mathbf d_i &= \sum_{j \neq i}\mathbf a_{ij}.
+\end{align*}
+This quantity is random, in that it is not necessarily any particular value, but rather, takes a number of possible values with a probability. We can use the properties that we learned above to compute the expected degree:
+\begin{align*}
+    \mathbb E[\mathbf d_i] &= \mathbb E\left[\sum_{j \neq i}\mathbf a_{ij}\right] \\
+    &= \sum_{j \neq i}\mathbb E[\mathbf a_{ij}],\numberthis \label{eqn:ch5:exp:deg:e1}
+\end{align*}
+Which is a direct consequence of Equation \eqref{eqn:ch5:exp:linearity}. Let's imagine that there are $n > 3$ nodes in the network, and $i = 1$. This means that:
+\begin{align*}
+    \mathbb E[\mathbf d_1] &= \mathbb E\left[\sum_{j \neq 1} \mathbf a_{1j} \right] = \mathbb E\left[\sum_{j \geq 2} \mathbf a_{1j} \right]\\
+    &= \mathbb E[\mathbf a_{12}] + \mathbb E\left[\sum_{j \geq 3} \mathbf a_{1j} \right],
+\end{align*}
+which is a direct application of the result of Equation \eqref{eqn:ch5:exp:linearity}. Next, we can write down $\mathbb E\left[\sum_{j \geq 3} \mathbf a_{1j} \right]$ as a sum of $\mathbb E[\mathbf a_{13}]$ and $\mathbb E\left[\sum_{j \geq 4} \mathbf a_{1j} \right]$, and we can continue this pattern all the way up to $n$ to get the result in Equation \eqref{eqn:ch5:exp:deg:e1}. 
+
+Continuing from Equation \eqref{eqn:ch5:exp:deg:e1}, remember that $\mathbb E[\mathbf a_{ij}] = p_{ij}$ by Equation \eqref{eqn:ch5:exp:prob}. So, the \textit{expected node degree} is:
+\begin{align*}
+    \mathbb E[\mathbf d_i] &= \sum_{j \neq i}p_{ij}.\numberthis\label{eqn:ch5:exp:expdeg}
+\end{align*}
+\begin{floatingbox}[h]\caption{Expected degree in an $SBM_n(\vec z, B)$ random network is constant within a community}
+Imagine that you have a network $\mathbf A$ that is an $SBM_n(\vec z, B)$ random network. Suppose that for $n$ nodes, $n/2$ of the nodes are in community $1$, and $n/2$ of the nodes are in community $2$. Consider the block matrix:
+\begin{align*}
+    B &= \begin{bmatrix}
+        0.5 & 0.2 \\
+        0.2 & 0.3
+    \end{bmatrix}.
+\end{align*}
+\begin{enumerate}
+    \item With $n=100$, compute the degree of each node in the network. 
+    \item Repeat the above simulation $R=100$ times, keeping track of your results in a data frame with the columns as the node index $i$, the community that the node $i$ is in, the simulation replicate $r$, and the node degree $d_{i}^{(r)}$. 
+    \item Compute the average degree for each node across all simulations. This should reduce your data frame to node index $i$, community that the node $i$ is in, and the average node degree over all simulations.
+    \item Explain what you observe about the average degrees for each node in a particular community (the nodes of the same community have$\hdots$ average node degrees, and nodes in different communities have $\hdots$ average node degrees). 
+    \item Establish an equation for the expected node degree for a node $i$, for each of the two communities. Explain how this supports your answer that you obtained in 4.
+\end{enumerate}
+\end{floatingbox}
+
+\subsubsection{Random network density}
+\label{sec:ch5:prop:rndens}
+Likewise, the \textit{density of a random network} $\mathbf A$ is defined as:
+\begin{align*}
+    density(\mathbf A) &= \frac{\sum_{j > i}\mathbf a_{ij}}{\binom n 2}
+\end{align*}
+As before, this quantity is random, so it does not have any particular value. However, its expected value can be computed using the rules that we described above exactly.
+
+First, notice that if the network has $n$ nodes, that $\binom n 2$ is simply a constant. THis means that:
+\begin{align*}
+    \mathbb E[density(\mathbf A)] &= \mathbb E\left[\frac{\sum_{j > i}\mathbf a_{ij}}{\binom n 2}\right] \\
+    &= \frac{1}{\binom n 2}\mathbb E\left[\sum_{j > i}\mathbf a_{ij}\right],
+\end{align*}
+which is from Equation \eqref{eqn:ch5:exp:rescale}. Next, we can use the linearity argument from Equation \eqref{eqn:ch5:exp:linearity} to obtain:
+\begin{align*}
+    \mathbb E[density(\mathbf A)] &= \frac{1}{\binom n 2}\sum_{j > i}\mathbb E[\mathbf a_{ij}] \\
+    &= \frac{1}{\binom n 2}\sum_{j > i}p_{ij}.\numberthis\label{eqn:ch5:exp:expdens}
+\end{align*}
+Using Equations \eqref{eqn:ch5:exp:expdeg} and \eqref{eqn:ch5:exp:expdens}, we can draw the same conclusions that we did in Section \ref{sec:ch4:prop-net:degree} to conclude that:
+\begin{align*}
+    \mathbb E[density(\mathbf A)] &= \frac{\sum_{i = 1}^n \mathbb E[\mathbf d_i]}{n(n - 1)}.\numberthis \label{eqn:ch5:exp:expdens:e0}
+\end{align*}
+Finally, remember that $d = \frac{1}{n}\sum_{i = 1}^n d_i$ is the average degree of the nodes in a network $A$. 
+
+Likewise, $\mathbf d = \frac{1}{n}\sum_{i = 1}^n \mathbf d_i$ is the average degree of nodes in a random network $\mathbf A$. Again, since this quantity is random, it can be summarized using expected values. Since $n$ is a fixed number of nodes, then:
+
+\begin{align*}
+    \mathbb E\left[\mathbf d\right] &= \mathbb E\left[\frac{1}{n}\sum_{i = 1}^n \mathbf d_i\right] \\
+    &= \frac{1}{n}\mathbb E\left[\sum_{i = 1}^n \mathbf d_i\right],
+\end{align*}
+using the rescaling property in Equation \eqref{eqn:ch5:exp:rescale}. Finally, using the linearity of sums in Equation \eqref{eqn:ch5:exp:linearity}:
+\begin{align*}
+    \mathbb E\left[\mathbf d\right] &= \frac{1}{n}\sum_{i = 1}^n \mathbb E[\mathbf d_i].
+\end{align*}
+Combining this with Equation \eqref{eqn:ch5:exp:expdens:e0}:
+\begin{align*}
+    \mathbb E[density(\mathbf A)] &= \frac{\mathbb E[\mathbf d]}{n - 1}.
+\end{align*}
+Just like the density of a network $A$ could be conceptualized as the average degree of each node in the network, the expected density of a random network $\mathbf A$ can be conceptualized as the average expected degree of each node in the random network.
+
+\subsection{Population network laplacian}
+\label{sec:ch5:prop:poplapl}
+Remember in Section \ref{sec:ch4:mtx-rep:dad_laplacian}, you learned that the \texttt{DAD} Laplacian was defined as a function of a adjacency matrix:
+\begin{align*}
+    L &= D^{-\frac{1}{2}}AD^{-\frac{1}{2}}\numberthis \label{eqn:ch5:dad}
+\end{align*}
+This was a function of the adjacency matrix because it is a product of the adjacency matrix pre and post-multiplied by a function of the adjacency matrix (the inverse square-root of the degree matrix, $D$). 
+
+Basically, the idea is that the population network Laplacian $\mathcal L$ is to the random network $\mathbf A$ what the \texttt{DAD} Laplacian $L$ was to the adjacency matrix $A$.
+
+The population network Laplacian is:
+\begin{align*}
+    \mathcal L &= \mathcal D^{-\frac{1}{2}} P \mathcal D^{-\frac{1}{2}}. \numberthis \label{eqn:ch6:lse:poplapl}
+\end{align*}
+
+The matrices $\mathcal D$ (note the cursive script instead of the $D$ script, to contrast it from the degree matrix of a network sample) here are what is known as the \textit{expected degree matrix}. 
+
+In the case of simple $IER_n(P)$ random networks, this is the diagonal matrix whose diagonal entries are:
+\begin{align*}
+    \mathbb E[\mathbf d_i] &= \sum_{j \neq i} p_{ij}.\numberthis \label{eqn:ch6:lse:e1}
+\end{align*}
+
+The only thing that you need to know for the purposes of this book is some intuition about this quantity. The expected degree matrix looks like this:
+
+\begin{align*}
+    \mathcal D &= \begin{bmatrix}
+        \mathbb E[d_1] & & \\
+        & \ddots & \\
+        & & \mathbb E[d_n]
+    \end{bmatrix} = \begin{bmatrix}
+\sum_{j \neq 1} p_{1j} & & \\
+& \ddots & \\
+& & \sum_{j \neq n} p_{nj}
+    \end{bmatrix}.
+\end{align*}
+
+So, it is a diagonal matrix, and is a function of the probability matrix $P$ (just like the degree matrix was a function of the adjacency matrix, for network samples). 
+
+The diagonal entries of $\mathcal D$, $\mathbb E[d_i]$, give the expected number of edges that you would expect a node $i$ to  have in a given network sample.
+
+A natural choice for the inverted square-root matrix of $\mathcal D$ would be:
+
+\begin{align*}
+    \mathcal D^{-\frac{1}{2}} &= \begin{bmatrix}
+        \frac{1}{\sqrt{\mathbb E[d_1]}} & & \\
+        & \ddots & \\
+        & & \frac{1}{\sqrt{\mathbb E[d_1]}}
+    \end{bmatrix} 
+\end{align*}
+
+Notice that as long as every node does not have a probability of zero of being connected to any other nodes in the network, this quantity exists and is finite. This is because if any node $i$ had a probability of zero of being connected to all of the other nodes of the network, then $\sum_{j \neq i} p_{ij} = \sum_{j \neq i} 0 = 0$, and hence, $\frac{1}{0} = \infty$. We will describe this restriction using the language that, for every node $i$, at least one other node $j$ exists where $p_{ij} > 0$.
+
+With the restriction in mind, all of the entries along the diagonal of $\mathcal D$ are going to be positive values. This means that their reciprocals $\frac{1}{\mathbb E[d_i]}$ and the square roots of their reciprocals $\frac{1}{\sqrt{\mathbb E[d_i]}}$ will also be positive values.
+
+In this sense, $\mathcal L$ can be thought of as the expected \texttt{DAD} Laplacian for a random network $\mathbf A$. It is the same equation as $L$ in Equation \eqref{eqn:ch5:dad}, except instead of thinking about the adjacency matrix/degree of a given matrix $A$, we are thinking about the expected adjacency matrix (the probability matrix, $P$) and the expected degree matrix $\mathcal D$ for the random network $\mathbf A$. 
+
+\newpage
