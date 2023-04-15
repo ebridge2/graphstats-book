@@ -31,7 +31,9 @@ As it turns out, the existence of this square-root matrix in the $2 \times 2$ ca
 \end{enumerate}
 Since the block matrix $B$ is a probability matrix, condition one applies automatically, since a probability cannot be negative. 
 
-Remembering back to linear algebra, the determinant of a $2 \times 2$ symmetric matrix $B$ is $b_{11}b_{22} - b_{21}^2$. This means that the block matrix will be positive semi-definite any time that $b_{11}b_{22} \geq b_{21}^2$. To conceptualize what this means intuitively, we'll introduce some different classifications of SBMs. These are covered in more technical depth in \cite{Chung2021Mar}.
+Remembering back to linear algebra, the determinant of a $2 \times 2$ symmetric matrix $B$ is $b_{11}b_{22} - b_{21}^2$. This means that the block matrix will be positive semi-definite any time that $b_{11}b_{22} \geq b_{21}^2$. When a matrix has all positive entries but is not positive semi-definite, we refer to the matrix as \textit{indefinite}. It is necessary to clarify here that the matrices must have all positive entries for this result to hold, as there are several other classes of matrices involving their definiteness that cannot arise if we restrict to positive matrices.
+
+To conceptualize what this means intuitively, we'll introduce some different classifications of SBMs. These are covered in more technical depth in \cite{Chung2021Mar}.
 
 \subsection{Erd\"os-R\'enyi block matrix}
 
@@ -75,7 +77,7 @@ A \textit{planted partition} block matrix is a block matrix where all of the on-
 
 Using the determinant condition and the fact that $b_{11} = b_{22}$, this implies that a planted partition is symmetric when $b_{11}^2 \geq b_{12}^2$. Since the entries of $B$ are probabilities and are hence non-negative, we can take square roots of both sides, and a sufficient condition is that $b_{11} \geq b_{12}$. When this criterion is satisfied, further clarify that the planted partition is a homophilic planted partition, because it fulfills the homophily criterion given in Section \ref{sec:ch5:psd_block:homophily}. 
 
-We can generate an indefinite by just making an example where the planted partition block matrix has off-diagonal entries that exceed the on-diagonal entries, like this:
+We can generate an indefinite planted partition block matrix by just making an example where the block matrix has off-diagonal entries that exceed the on-diagonal entries, like this:
 
 
 \begin{lstlisting}[style=python]

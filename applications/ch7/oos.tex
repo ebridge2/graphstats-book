@@ -1,6 +1,41 @@
 \section{Out-of-sample embedding}
 \label{sec:ch7:oos}
 
+While the networks that we have been using in this book have generally been on the small side, for larger networks, computing embeddings can be expensive. In Remark \ref{box:ch7:oos:ex}, we detail an example of why this is the case.
+
+\begin{floatingbox}[h]\caption{Spectral embeddings of networks with many nodes}
+\label{box:ch7:oos:ex}
+Let's imagine that you have a network, where the nodes are web pages and the edges are whether a pair of web pages cross-link to one another. There are $n=10^9$ nodes in the network, and let's imagine that you have a strong suspicion that there are communities that are homophilic (they have high within-community clustering). For any given day, you want to have a record of the estimated communities that exist in your network. Procedurally, we learned how to address this task in Section \ref{sec:ch7:comm_detect}: you begin by embedding the network, and then you train an unsupervised classifier to identify estimated community structure from the estimated latent positions.
+
+The next day, however, you have a problem: another $n'=5$ web pages were added to the network. Being a diligent machine learning scientist, you could simply re-execute your procedure you used the previous day. However, this has a limitation: the \texttt{svd} (a crucial component of spectral embeddings), while more than sufficient for the networks that we have been working with in this book, has quite the algorithmic time complexity: in fact, it tends to scale in $\mathcal O(n^3)$, and the memory requirements are no better, scaling at about $\mathcal O(n^2)$. This means that for networks with more nodes, embedding the network will take a lot of computing resources to calculate. Your web pages network is very large, so this could get expensive very quickly!
+\end{floatingbox}
+
+The key problem is that the network is extremely large, and the \texttt{svd} (and consequently, the \texttt{ase}) scales remarkably poorly for large networks. When you embed large networks, you might have to resort to using special super computers with enormous numbers of cores or memory to get the results that you need. These computers tend to be expensive, so the cost of this operation could skyrocket quickly. 
+
+Remember that when we make assumptions that our network $A$ is a sample from an underlying random network $\mathbf A$ as in Section \ref{sec:ch6:ase:whyuse}, the estimates of latent positions produced by \texttt{ase} tend to be fairly close estimates of the true underlying latent positions in the network. Further, as the network grows, these estimates get better and better. This means that if we embedded a network with $n + n'$ nodes, the embedding is probably going to be fractionally better than the embedding if we just used $n$ nodes. 
+
+The difference, however, will not be particularly substantial, and sometimes we might be willing to take a slight loss in the precision of our estimates at the tradeoff of having far greater computational and algorithmic efficiency. In these cases, we can use an \textit{out of sample embedding}, or \texttt{oose}, to embed new nodes (the ``out-of-sample'' nodes) in an existing latent space computed using only the original nodes (the ``in-sample'' nodes). 
+
+When we do this, we obtain estimated latent positions for our new nodes in a shared space between the new and old nodes. While we might still want to recompute the full embedding occassionally, in the short term we can save a lot of computation resources (which can mean time, money, and effort) and still obtain estimated latent positions that are good enough for our downstream analysis.
+
+\subsection{\texttt{oose} requires a full adjacency matrix and adjacency vectors for each new node}
+
+Let's begin by generating a network. For the out-of-sample embedding, we first need an $n$-node network (the ``in-sample'' nodes). The crucial ingredient that we will need for the out-of-sample nodes are instructions that tell us how the out-of-sample nodes are connected to the ``in-sample'' nodes. This is accomplished via adjacency vectors, which can be thought of as behaving a lot like ``rows'' of an adjacency matrix. An \textit{adjacency vector} for a node $j$ in relation to an $n$-node network is a length-$n$ vector $\vec a^{(j)}$, where $a_i^{(j)}$ indicates whether node $i$ and node $j$ are connected.
+
+For demonstration purposes, we'll generate a sample from an $SBM_n(\vec z, B)$ random network with $n + n'$ nodes:
+
+\begin{lstlisting}[style=python]
+
+\end{lstlisting}
+
+Next, we will remove the $n'$ ``out-of-sample'' nodes with \texttt{graspologic}. This will give us an $n \times n$ adjacency matrix of the in-sample nodes, and an $n' \times n$ matrix of adjacency vectors, which indicate the connectivity of out-of-sample nodes to in-sample nodes:
+
+\begin{lstlisting}[style=python]
+
+\end{lstlisting}
+
+
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{representations/ch7/Images}
@@ -9,9 +44,6 @@
 \end{figure}
 
 
-\begin{lstlisting}[style=python]
-
-\end{lstlisting}
 
 \begin{lstlisting}[style=python]
 

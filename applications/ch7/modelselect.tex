@@ -94,10 +94,13 @@ To consider this idea of sequentially nested hypotheses for network data, let's 
     \item the group of edges where both nodes are from community two, and 
     \item the group of edges where one node is from community one and the other from community two.
 \end{enumerate}
-For each edge, we can build an edge group assignment matrix, which re-conceptualizes our $SBM_n(\vec z, B)$ random network as a $SIEM_n(D, \vec p)$ random network. We will still study the problem :
+For each edge, we can build an edge group assignment matrix, which re-conceptualizes our $SBM_n(\vec z, B)$ random network as a $SIEM_n(D, \vec p)$ random network. This is simply to ease our ability to index the adjacency matrix by groups of nodes:
 
 \begin{lstlisting}[style=python]
+# upper left has a value of 1, lower right has a value of 4,
+# and upper right, bottom left havre a value of 2
 D = np.array(zs).reshape(n, 1) @ np.array(zs).reshape(1, n)
+# make lower right have a value of 3
 D[D == 4] = 3
 \end{lstlisting}
 
@@ -165,7 +168,7 @@ In the two-sample case with $2$ columns, the Fisher's exact test is generally re
 \label{box:ch7:model:chisq}
 When you have contingency tables with $K$ columns and $2$ rows, a good technique is known as the $\chi$-squared test. Unlike the Fisher's exact test, the $\chi$-squared test is an asymptotic test, in that it is effective when we have many samples of data, but has limitations when we do not have many samples of data. While it is generally preferable to defer to exact tests when possible, it will do for our purposes here. 
 
-This statistical test gives us a test statistic, $X$, which is larger when the $K$ groups differ more, and small when the $K$ groups are the same. We use properties about the underlying network (that the edges are independent) to deduce what $X$ should look like if the $K$ groups are the same (known as the $\chi$-squared distribution). Finally, we obtain a $p$-value for our test by studying how anamalous the test statistic $X$ that we observed is compared to the $\chi$-squared distribution.
+This procedure gives us a test statistic, $X$, which is larger when the $K$ groups differ more, and small when the $K$ groups are the same. We use properties about the underlying network (that the edges are independent) to deduce what $X$ should look like if the $K$ groups are the same (known as the $\chi$-squared distribution). Finally, we obtain a $p$-value for our test by studying how anamalous the test statistic $X$ that we observed is compared to the $\chi$-squared distribution.
 \end{floatingbox}
 
 \begin{comment}
@@ -176,7 +179,9 @@ This allows us to test whether, if $p_k$ are the column-wise mean probabilities 
 Crucially, if we run two $\chi$-squared tests corresponding to two different table groupings with nested alternative hypotheses, we can compare the $\chi$-squared statistics (across the two different table groupings) and determine which grouping is more appropriate. 
 \end{comment}
 
-To refer back to our sequentially nested hypotheses, we can test whether the block model is Erd\"os-R\'enyi against whether it is homophilic planted partition directly, using the $2 \times 2$ contingency table in Table \ref{tab:ch7:model:cont_homo}. This produces a test statistic $X^{(1)}$, which we can use to test $H_0$ that the model is Erd\"os-R\'enyi against $H_A$ that the model is a homophilic planted partition. 
+To refer back to our sequentially nested hypotheses, we can test whether the block model is Erd\"os-R\'enyi against whether it is homophilic planted partition directly, using the $2 \times 2$ contingency table in Table \ref{tab:ch7:model:cont_homo}. This produces a test statistic $\ell^{(1)}$ (the likelihood ratio statistic), which has higher values when it is more likely that the data do not support the null hypothesis. 
+
+We can use this to test $H_0$ that the model is Erd\"os-R\'enyi against $H_A$ that the model is a homophilic planted partition. We perform this test by comparing $\ell^{(1)}$ to the $\chi$-squared distribution with the number of parameters (here, $2$) minus $1$ degrees of freedom. 
 
 \begin{table}[h]
     \centering
@@ -193,10 +198,27 @@ To refer back to our sequentially nested hypotheses, we can test whether the blo
 In our data, the first step is to establish a model with the desired contingency table. We do this by using a \texttt{pandas} dataframe where the rows are edges, the firstcolumn indicates the value of the adjacency matrix for that particular edge, and the second column indicate the edge-group. Then, we indicate the \texttt{python} that we would like a statistical model for binary data by indicating a logistic regression with the \texttt{statsmodels} package:
 
 \begin{lstlisting}[style=python]
+import statsmodels.api as sm
+import pandas as pd
+import statsmodels.formula.api as smf
+from scipy import stats as spstat
 
+# upper triangle since the network is simple (undirected and loopless)
+upper_tri_non_diag = np.triu(np.ones(A.shape), k=1).astype(bool)
+
+df_H1 = pd.DataFrame({"Value" : A[upper_tri_non_diag],
+            "Group": (D[upper_tri_non_diag] != 2).astype(int)})
+
+# fit the logistic regression model
+model_H1 = smf.logit("Value ~ C(Group)", df_H1).fit()
+
+# compare the likelihood ratio statistic to the chi2 distribution
+# to see the fraction that is less than l1
+print("p-value: {:.3f}".format(spstat.chi2.sf(model_H1.llr, 1)))
+# p-value: 0.000
 \end{lstlisting}
 
-Next, we run a second test, using the contingency table in Table \ref{tab:ch7:model:cont_het}. This produces a test statistic $X^{(2)}$, which we can use to test $H_0$ that the model is not homophilic with heterogeneous on-diagonal blocks against $H_A$ that the model is homophilic with heterogeneous on-diagonal blocks. 
+Once we know that the data supports rejecting the null hypothesis, we run a second test, using the contingency table in Table \ref{tab:ch7:model:cont_het}. This produces a test statistic $\ell^{(2)}$, which we can use directly to test $H_0$ that the model is not homophilic with heterogeneous on-diagonal blocks against $H_A$ that the model is homophilic with heterogeneous on-diagonal blocks. 
 
 \begin{table}[h]
     \centering
@@ -210,12 +232,15 @@ Next, we run a second test, using the contingency table in Table \ref{tab:ch7:mo
     \label{tab:ch7:model:cont_het}
 \end{table}
 
-The magic occurs here: when we look at the ratio $\frac{X^{(2)}}{X^{(1)}}$, the test that we are really running when the hypotheses are sequentially nested is a test of whether $H_0$ the model is a homophilic planted partition against $H_A$ that the model is homophilic with heterogeneous on-diagonal blocks. This strange result occurs because, when the hypotheses are nested, we can describe what $\frac{X^{(2)}}{X^{(1)}}$ looks like if the more complicated model does not add any value to the simpler model. Whereas the reference before was the $\chi$-squared distribution, the reference here is known as the $F$-distribution. 
-
-This procedure is generally known as an \textit{Analysis of Variance} (ANOVA), and is extremely common when comparing $K$ groups of data in both binary and non-binary situations. In our case, our network samples have adjacency matrix entries with binary values ($0$ or $1$), so we can use it.
+The magic occurs here: when we look at the difference $\ell^{(2)} - \ell^{(1)}$, the test that we are really running when the hypotheses are sequentially nested is a test of whether $H_0$ the model is a homophilic planted partition against $H_A$ that the model is homophilic with heterogeneous on-diagonal blocks. This strange result occurs because, when the hypotheses are nested, we can describe what $\ell^{(2)} - \ell^{(1)}$ looks like (just like above, a $\chi$-squared distribution) if the more complicated model does not add any value to the simpler model (and the null hypothesis is true). In this case, again, the number of degrees of freedom is the difference between the number of possible parameters in the larger model (here, $3$; a unique parameter for $b_{11}$, $b_{12}$, and $b_{22}$) and the number of possible parameters in the smaller model (which was $2$). 
 
 \begin{lstlisting}[style=python]
-
+df_H2 = pd.DataFrame({"Value": A[upper_tri_non_diag],
+                      "Group": D[upper_tri_non_diag].astype(int)})
+model_H2 = smf.logit("Value ~ C(Group)", df_H2).fit()
+lr_stat_H1vsH2 = model_H2.llr - model_H1.llr
+print("p-value: {:.3f}".format(spstat.chi2.sf(lr_stat_H1vsH2, 1)))
+# p-value: 0.017
 \end{lstlisting}
 
 \newpage
