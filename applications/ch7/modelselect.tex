@@ -42,7 +42,7 @@ However, there's a problem: remember in Section \ref{sec:ch7:testing}, a key foc
 \begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{applications/ch7/Images/model_select_ex.png}
-    \caption{\textbf{(A)} the true probability matrix underlying the $SBM_n(\vec z, B)$ random network, \textbf{(B)} a sample of the random network, \textbf{(C)} the estimated block matrix.}
+    \caption[Selecting optimal models]{\textbf{(A)} the true probability matrix underlying the $SBM_n(\vec z, B)$ random network, \textbf{(B)} a sample of the random network, \textbf{(C)} the estimated block matrix.}
     \label{fig:ch7:model:ex}
 \end{figure}
 
@@ -242,5 +242,7 @@ lr_stat_H1vsH2 = model_H2.llr - model_H1.llr
 print("p-value: {:.3f}".format(spstat.chi2.sf(lr_stat_H1vsH2, 1)))
 # p-value: 0.017
 \end{lstlisting}
+
+The $p$-value is below $\alpha=0.05$ for this test, too. So, we reject the null hypothesis that the underlying block matrix is homophilic planted partition, and conclude that the underlying block matrix is homophilic with heterogeneous on-diagonal blocks.
 
 \newpage

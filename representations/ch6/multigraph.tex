@@ -31,7 +31,7 @@ Balien = np.array([[0.02, 0.2], [0.2, 0.02]])
 A_humans = [sbm([n // 2, n // 2], Bhum) for i in range(M // 2)]
 A_aliens = [sbm([n // 2, n // 2], Balien) for i in range(M // 2)]
 # concatenate list of human and alien networks
-As = A_humans + A_aliens
+networks = A_humans + A_aliens
 
 # 1 = left hemisphere, 2 = right hemisphere for node communities
 zs = [1 for i in range(n // 2)] + [2 for i in range(n // 2)]
@@ -202,7 +202,7 @@ from graspologic.embed import AdjacencySpectralEmbed as ase
 
 dhat = int(np.ceil(np.log2(n)))
 # spectrally embed each network into ceil(log2(n)) dimensions with ASE
-joint_matrix = [ase(n_components=dhat).fit_transform(network) for network in As]
+joint_matrix = [ase(n_components=dhat).fit_transform(network) for network in networks]
 \end{lstlisting}
 
 We plot the spectral embeddings of a human and an alien (showing only the first two dimensions) in Figure \ref{fig:ch6:multinet:mase:ase}. Notice that the separate embeddings individually preserve the community structure across both humans and aliens. Figure \ref{fig:ch6:multinet:mase:ase_joint}(A) shows the embeddings across all networks as heatmaps.
@@ -255,7 +255,7 @@ def unscaled_embed(X, d):
     U, s, Vt = np.linalg.svd(X)
     return U[:,0:d]
 
-Vhat = unscaled_embed(joint_mtx, 2)
+Vhat = unscaled_embed(joint_matrix, 2)
 \end{lstlisting}
 
 The result of this unscaled embedding is known as an \textit{estimate of the shared latent positions}, and is denoted by the matrix $\hat V$. $\hat V$ has $n$ rows and $d$ columns, so each row $\hat{\vec v}_i$ is an estimate of the shared latent position of node $i$. 
@@ -310,7 +310,7 @@ Let's see how to do this in practice with our networks:
 
 \begin{lstlisting}[style=python]
 # stack the networks into a numpy array
-As_ar = np.asarray(As)
+As_ar = np.asarray(networks)
 # compute the scores
 scores = Vhat.T @ As_ar @ Vhat
 \end{lstlisting}
@@ -370,7 +370,7 @@ from graspologic.embed import MultipleASE as mase
 d = 2
 mase_embedder = mase(n_components=d)
 # obtain an estimate of the shared latent positions
-Vhat = mase_embedder.fit_transform(As)
+Vhat = mase_embedder.fit_transform(networks)
 # obtain an estimate of the scores
 Rhat_hum1 = mase_embedder.scores_[0]
 # obtain an estimate of the probability matrix for the first human
@@ -407,8 +407,10 @@ By construction, notice that the Omnibus matrix is symmetric with respect to the
 Let's consider only the first two networks (human networks), and construct a simple omnibus matrix from these. We can do this with \texttt{numpy}:
 
 \begin{lstlisting}[style=python]
-omni_ex = np.block([[As[0], (As[0]+As[1])/2],
-                 [(As[1]+As[0])/2, As[1]]])
+omni_ex = np.block(
+    [[networks[0], (networks[0]+networks[1])/2],
+     [(networks[1]+networks[0])/2, networks[1]]]
+)
 \end{lstlisting}
 
 We visualize this small omnibus matrix in Figure \ref{fig:ch6:multinet:omni:ex}. We illustrate the first two networks in \ref{fig:ch6:multinet:omni:ex}(A) and \ref{fig:ch6:multinet:omni:ex}(B), and the resulting omnibus matrix of the first two networks in \ref{fig:ch6:multinet:omni:ex}(C).
@@ -423,7 +425,7 @@ We visualize this small omnibus matrix in Figure \ref{fig:ch6:multinet:omni:ex}.
 We can use \texttt{graspologic} to obtain the omnibus matrix for our collection of networks:
 \begin{lstlisting}[style=python]
 from graspologic.embed.omni import _get_omni_matrix
-omni_mtx = _get_omni_matrix(As)
+omni_mtx = _get_omni_matrix(networks)
 \end{lstlisting}
 
 The full omnibus matrix for all $8$ networks is shown in Figure \ref{fig:ch6:multinet:omni:fullmtx}(A). You can conceptualize the omnibus matrix as the adjacency matrix of a new network from your collection of networks, where the nodes from each network form a single node in the new network. A subnetwork induced on the omnibus matrix by the nodes from a single network is the original network itself (the on-diagonal blocks of the omnibus matrix $O^{(i,i)}$). The subnetwork formed by the nodes of a network $i$ and the nodes of another network $j$ provides information about how similar (or different) the networks $i$ and $j$ are (the off-diagonal blocks of the omnibus matrix $O^{(i, j)}$). This incorporation of information about each network in relation to the other networks is what will allow \texttt{omni} to properly orient the latent positions across your collection of networks.
@@ -512,7 +514,7 @@ from graspologic.embed import OmnibusEmbed as omni
 Xhat_tensor = omni(n_components=int(np.log2(n))).fit_transform(As)
 # obtain the estimated latent positions for the first human
 # network
-Xhat_hum1 = Xhat[0,:,:]
+Xhat_hum1 = Xhat_tensor[0,:,:]
 \end{lstlisting}
 
 \subsubsection{Relating \texttt{omni} to heterogeneous collections of RDPGs}

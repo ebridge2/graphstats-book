@@ -2,33 +2,32 @@
 \label{sec:ch6:ase}
 
 \begin{floatingbox}[h]\caption{Give $SBM_n(\vec z, B)$ random networks and linear algebra a revisit}
-In this section, we're going to revisit the $SBM_n(\vec z, B)$ random networks. The intuition that you gained in \ref{sec:ch5:psd_block} will be critical for the embedding approach that we learn here, so give it another read. 
+In this section, we're going to revisit the $SBM_n(\vec z, B)$ random networks. The intuition that you gained in \ref{sec:ch5:psd_block} will be critical for the embedding approach that we learn here, so give it another read-through if you feel unfamiliar. 
 
-The key algorithms that we will use in this section are known as the {eigendecomposition} and the {singular value decomposition}. To situate yourself in the process for the {eigendecomposition}, we would recommend that you look at \cite{Axler}. To situate yourself in the process for the singular value decomposition \cite{Trefethen1997}, lectures 1 through 4. This covers all of the basic intuition that you will need to remember about the \textit{eigendecomposition}, the singular value decomposition, and will get you back in the mindset of matrix multiplication, which will be a key result that we will need here.
+The key algorithms in this section are known as the {eigendecomposition} and the {singular value decomposition}. For a refresher on eigendecomposition, check \cite{Axler}. For singular value decomposition, read lectures 4 and 5 in \cite{Trefethen1997}.
 \end{floatingbox}
 
-Let's imagine that we have a probability matrix $P$ for a simple indepndent-edge random network which is positive semi-definite. Remember that for a positive semi-definite real matrix, the square-root matrix exists and is real, which we explored in Section \ref{sec:ch5:psd_block}. 
+Let's imagine that we have a probability matrix $P$ for a simple independent-edge random network which is positive semi-definite. Remember that for a positive semi-definite real matrix, the square-root matrix exists and is real, which we explored in Section \ref{sec:ch5:psd_block}. Since the network is simple, it's undirected, and so $P$ is symmetric.
 
-If we let $X = \sqrt{P}$ be the square-root matrix for $P$, this means that $P$ is the probability matrix corresponding to an $RDPG_n(X)$ random network. For our purposes, we will assume that the network has $n$ nodes, and $X$ has a latent dimensionality of $d$ which is less than the number of nodes, and that none of the columns are redundant (the rank of $X$ is $d$).
+If we let $X = \sqrt{P}$ be the square-root matrix for $P$, so that $P = X X^\top$, $P$ is the probability matrix corresponding to an $RDPG_n(X)$ random network. For our purposes, we will assume that the network has $n$ nodes, and $X$ has a latent dimensionality of $d$ which is less than the number of nodes, and that none of the columns are redundant (the rank of $X$ is $d$).
 
 \subsection{The eigendecomposition provides us with latent position matrices for random networks with positive semi-definite probability matrices}
 
+These facts provide us with useful information about the eigendecomposition of $P$. This information is summarized below, in Remark \ref{box:ch6:evd_sum}.
 
-Since the network is simple, $P$ is symmetric, as simple networks are undirected. Finally, as we learned in Section \ref{sec:ch5:ier:ier_generalises}, matrices that can be expressed as the product of a real matrix and its transpose are positive semi-definite, so $P$ is positive semi-definite (since it is $X$ times its transpose).
-
-These facts provide us with a number of useful implications about the eigendecomposition of $P$, in Remark \ref{box:ch6:evd_sum}.
 \begin{floatingbox}[h]\caption{The eigendecomposition of symmetric matrices}
 \label{box:ch6:evd_sum}
-If $R$ is a real symmetric square matrix with real entries, then the \textit{eigendecomposition} of $R$ is the factorization $R = Q\Lambda Q^\top$ where $\Lambda$ is the diagonal matrix of the ordered (in decreasing order) eigenvalues of $P$, and $Q$ is the matrix whose columns are eigenvectors of $P$. 
+Consider a real symmetric matrix $R$. The \textit{eigendecomposition} of $R$ is the factorization $R = Q\Lambda Q^\top$ where $\Lambda$ is the diagonal matrix of the ordered (in decreasing order) eigenvalues of $R$, and $Q$ is the matrix whose columns are eigenvectors of $R$. 
 
 If $R$ is rank $d$, $\Lambda$ will have $d$ eigenvalues that are non-zero, and the remaining $n - d$ eigenvalues will be $0$. 
 
-If $R$ is positive semi-definite, the eigenvalues will further be non-negative; so, $\lambda_1 \geq \lambda_2 \geq \hdots \geq \lambda_ n \geq 0$.
+If $R$ is positive semi-definite, the eigenvalues will be non-negative; so, $\lambda_1 \geq \lambda_2 \geq \hdots \geq \lambda_ n \geq 0$.
 
-If $R$ is both symmetric, positive semi-definite,and rank $d$, then combining these facts gives two key results:
+Let $R$ be symmetric, positive semi-definite, and of rank $d$. We draw two important conclusions:
+
 \begin{enumerate}
     \item The non-zero eigenvalues are ordered and positive: $\lambda_1 \geq \hdots \lambda_d > 0$.
-    \item with $Q_d$ the $n \times d$ matrix whose entries are the first $d$ eigenvectors of $P$, and $\Lambda_d$ the $d \times d$ diagonal matrix whose diagonal entries are the first $d$ non-zero eigenvalues of $R$:
+    \item With $Q_d$ the $n \times d$ matrix whose entries are the first $d$ eigenvectors of $P$, and $\Lambda_d$ the $d \times d$ diagonal matrix whose diagonal entries are the first $d$ non-zero eigenvalues of $R$:
 \begin{align*}
 R = Q_d \Lambda_d Q_d^\top
 \end{align*}
@@ -36,9 +35,9 @@ R = Q_d \Lambda_d Q_d^\top
 Throughout this book, we notate the eigendecomposition of a matrix $R$ with $\texttt{evd}(R)$.
 \end{floatingbox}
 
-So, if $P$ is positive semi-definite, rank $d$, and symmetric, this allows us to obtain a characterization of the latent positions of $P$, where we can obtain that:
+So, if $P$ is positive semi-definite, rank $d$, and symmetric, we obtain a characterization of the latent positions of $P$, where:
 \begin{align*}
-    P = YY^\top,\;\;\;\; Y = Q_d \sqrt{\Lambda_d}
+    P = Q_d \Lambda_d Q_d^\top = (Q_d \sqrt{\Lambda_d})(Q_d \sqrt{\Lambda_d})^\top = XX^\top,\;\;\;\; X = Q_d \sqrt{\Lambda_d}
 \end{align*}
 where $\sqrt{\Lambda_d}$ is the matrix whose entries are the square roots of the first $d$ eigenvalues of $P$. Note that $\sqrt{\Lambda_d}$ is real, because the top $d$ eigenvalues are positive, so their square root is defined. We can put this entire procedure together, using Algorithm \ref{alg:ch6:evd}, to obtain a latent position matrix for the random network.
 
@@ -66,16 +65,19 @@ Let $Y = Q_d \sqrt{\Lambda_d}$.
 \Return{$Y$}
 \end{algorithm}
 
-This gives us a method to compute a latent position matrix for the underlying random network, which has $n$ rows and $d$ columns. 
+This gives us a method to compute a latent position matrix for the underlying random network, which has $n$ rows (the same as the number of nodes) and $d$ columns. 
 
+This latent position matrix $X$ is our first example of a network embedding. This matrix has $n$ rows, the same as the number of nodes in our random network. In this case we're embedding our generative model $P$, rather than an observation of it $A$, but later we'll use the same logic to embed realized networks.
 
-\subsubsection{Rotational non-identifiability of the latent position matrix}
+Each of the $n$ rows of $X$ corresponds to a node in our network. We've embedded this network into $d$ dimensions. We'll soon see that, if we take $d$ = 2 and plot the results, networks with clear community structure embed into latent position matrices with obvious clustering structure.
+
+\subsubsection*{Rotational non-identifiability of the latent position matrix}
 \label{sec:ch6:spectral:nonidentifiable}
 As it turns out, there are many ``reasonable'' latent position matrices for a random network with a positive semi-definite probability matrix, where by ``reasonable'', we mean that they all would produce the same latent position matrix. In particular, there are infinitely many embeddings that are identical up to a rotation.
 
-A \textit{rotation matrix} $W$ in $d$-dimensions is any $d$-dimensional matrix where $WW^\top = W^\top W = I_d$, the $d$-dimensional identity matrix.
+A \textit{rotation matrix} $W$ in $d$ dimensions is any $d$-dimensional matrix where $WW^\top = W^\top W = I_d$, the $d$-dimensional identity matrix.
 
-Let's imagine that $X$ is another latent position matrix, but is a rotation of $Y$. That means that there is a rotation matrix $W$ where $X = YW$. The probability matrix for the $RDPG_n(X)$ network is:
+Let's imagine that $Y$ is another latent position matrix, but is a rotation of $X$. That means that there is a rotation matrix $W$ where $X = YW$. The probability matrix for the $RDPG_n(X)$ network is:
 \begin{align*}
     P &= XX^\top \\
     &= YW\left(YW\right)^\top,
@@ -85,7 +87,7 @@ which is because $X = YW$. Applying the definition of a transpose, we get:
     P &= YW W^\top Y^\top \\
     &= YI_d Y^\top,
 \end{align*}
-which is because $W$ was a rotation matrix, so $W^\top W = WW^\top = I_d$. Finally, since $YI_d = Y$ (by definition of the identity matrix):
+which is because $W$ was a rotation matrix, so $W^\top W = WW^\top = I_d$ (where $I_d$ is the rank-$d$ identity matrix). Finally, since $YI_d = Y$:
 \begin{align*}
     P &= YY^\top.
 \end{align*}
@@ -93,31 +95,31 @@ This shows that the $RDPG_n(Y)$ and $RDPG_n(X)$ random networks have the same pr
 
 This is known as the \textit{rotational non-identifiability} problem with random dot product graphs, in that random networks with different latent position matrices (by as much as an arbitrary rotation by the rotation matrix $W$) can still have the same probability matrix. Therefore, different latent position matrices can describe fundamentally identical (in probability) random networks.
 
-\subsubsection{Limitations of the \texttt{evd} for adjacency matrices}
+\subsubsection*{Limitations of the \texttt{evd} for adjacency matrices}
 
 These results are helpful when we know the probability matrix ahead of time. In fact, we even know how to determine whether the probability matrix is positive semi-definite, using the procedure that we developed in Section \ref{sec:ch5:psd_block}, where we simply checked whether all of the eigenvalues were non-negative.
 
 
 Unfortunately, in real data, we don't typically have the probability matrix; all that we have is the network itself. This network can typically be represented in an adjacency matrix. 
 
-It would be helpful (and maybe even intuitive) if we could simply plug in the adjacency matrix into Algorithm \ref{alg:ch6:evd}, and obtain a reasonable estimate of the latent positions out. While this matrix is real and symmetric, it is unfortunately not necessarily positive semi-definite.
+It would be helpful (and maybe even intuitive) if we could simply plug the adjacency matrix into Algorithm \ref{alg:ch6:evd}, and obtain a reasonable estimate of the latent positions out. Unfortunately, while this matrix is real and symmetric, it is not necessarily positive semi-definite. This means that we can't necessarily decompose it in the exact same way.
 
-Consider, for instance, an extremely simple network you might obtain:
+Consider, for instance, an extremely simple network:
 \begin{align*}
     A &= \begin{bmatrix}
         0 & 1 \\
         1 & 0
     \end{bmatrix}
 \end{align*}
-Remember that for a $2 \times 2$ matrix to be positive semi-definite, a characterization from Section \ref{sec:ch5:psd_block} was that $det(A) \geq 0$. However, $det(A) = 0 \cdot 0 - (1 \cdot 1) = -1$, so this matrix is not positive semi-definite. 
+Remember from \ref{sec:ch5:psd_block} that for a $2 \times 2$ matrix to be positive semi-definite, its determinant has to be strictly positive: $det(A) \geq 0$. However, $det(A) = 0 \cdot 0 - (1 \cdot 1) = -1$. This matrix is not positive semi-definite. 
 
-This means that none of the logical basis that led to the conclusion of Algorithm \ref{alg:ch6:evd} applies to adjacency matrices; for instance, in this simple example, the matrix $\sqrt{\Lambda_d}$ is not even a real matrix (it is a complex matrix, since $\sqrt{-1} = i$). 
+This means that none of the logic leading to Algorithm \ref{alg:ch6:evd} applies to adjacency matrices; for instance, in this simple example, the matrix $\sqrt{\Lambda_d}$ is not even a real matrix (it is a complex matrix, since $\sqrt{-1} = i$). 
 
 In practice, the implications of this trivial example are that we cannot use the eigendecomposition to obtain real estimates of latent position matrices from adjacency matrices.
 
-\subsection{The singular value decomposition allows us to estimate latent positions}
+\subsection{The singular value decomposition allows us to estimate embeddings}
 
-There is a closely related approach, the \textit{singular value decomposition}, which we can use as a logical basis to obtain a real estimate of latent position matrices. We summarize many useful results about the singular value decomposition in Remark \ref{box:ch6:svd}.
+There is a closely related approach, the \textit{singular value decomposition}, which we can use to estimate latent position matrices regardless of the positive semidefiniteness of $P$. We summarize useful results about the singular value decomposition in Remark \ref{box:ch6:svd_results}.
 
 \begin{floatingbox}[h]\caption{The singular value decomposition of real matrices}
 \label{box:ch6:svd_results}
@@ -129,7 +131,10 @@ If $R$ is positive semi-definite, then all left and right singular vectors $\vec
 \begin{align*}
     R &= U \Sigma U^\top,
 \end{align*}
-and further if $R$ is rank $d < n$, with $U_d$ the $n \times d$ matrix of the top $d$ left singular vectors of $U$ and $\Sigma_d$ the $d \times d$ diagonal matrix of the top $d$ singular values:
+
+and so the singular value decomposition of positive semidefinite $R$ collapses into the eigendecomposition.
+
+Further if $R$ is rank $d < n$, with $U_d$ the $n \times d$ matrix of the top $d$ left singular vectors of $U$ and $\Sigma_d$ the $d \times d$ diagonal matrix of the top $d$ singular values:
 \begin{align*}
     R &= U_d \Sigma_d U_d^\top.
 \end{align*}
@@ -171,12 +176,12 @@ Let $\hat Y = U_d \sqrt{\Sigma_d}$.
 \Return{$\hat Y$}
 \end{algorithm}
 
-This process is known as the Adjacency Spectral Embedding, or \texttt{ase}. It is called ``Adjacency'' because it operates on the adjacency matrix. ``Spectral'' just denotes that its theoretical intuition relies on the eigenvalues/eigenvectors of $P$ (the only reason that we calculated singular values/vectors of $A$ was for the convenience that it yielded a real matrix and not a complex one, and the properties for both approaches are similar). That it is an ``embedding'' simply denotes that it finds a mathematical structure contained in another (a tabular structure contained within the adjacency matrix, as explained in Remark \ref{box:ch6:tabularize}). 
+This process is known as the Adjacency Spectral Embedding, or \texttt{ase}. It is called ``Adjacency'' because it operates on the adjacency matrix. ``Spectral'' just denotes that its theoretical intuition relies on the eigenvalues/eigenvectors of $P$ (the only reason that we calculated singular values/vectors of $A$ was for the convenience that it yielded a real matrix and not a complex one, and the properties for both approaches are similar).``Embedding'' here simply means that it finds a mathematical structure contained in another (a tabular structure contained within the adjacency matrix, as explained in Remark \ref{box:ch6:tabularize}). 
 
 
 \begin{floatingbox}[h]\caption{\texttt{ase} tabularizes your adjacency matrix}
 \label{box:ch6:tabularize}
-One of the challenges that we noted in Section \ref{sec:ch1:challenges} and reiterated in Section \ref{sec:ch6:why} was that network data fundamentally differs from traditional machine learning in that the data is not tabular. However, the embedding process has changed this for us: we have used a bag of nodes approach to tabularize the network into an real estimated latent position matrix with $n$ rows (one for each node) and $d$ columns (one for each latent dimension). This provides us with a tabular data structure, which we can build upon later on to explore the nodes using more traditional machine learning approaches. 
+One of the challenges we noted in Section \ref{sec:ch1:challenges} and reiterated in Section \ref{sec:ch6:why} was that network data differs fundamentally  from traditional machine learning in that the data is not tabular. However, the embedding process has changed this for us: we have used a bag of nodes approach to tabularize the network into an real estimated latent position matrix with $n$ rows (one for each node) and $d$ columns (one for each latent dimension). This provides us with a tabular data structure, which we can build upon later on to explore the nodes using more traditional machine learning approaches. 
 \end{floatingbox}
 
 
@@ -196,8 +201,8 @@ B = np.array([[0.6, 0.1],
 # sample a graph from SBM_{100}(tau, B)
 A, zs = sbm(n=[n//2, n//2], p=B, return_labels=True)
 
-X = lpm_from_sbm(zs, B, zero_index=True)
-P = generate_sbm_pmtx(zs, B, zero_index=True)
+X = lpm_from_sbm(zs, B)
+P = generate_sbm_pmtx(zs, B)
 \end{lstlisting}
 
 We show a plot of the latent positions, the probability matrix, and our network sample in Figure \ref{fig:ch6:ase:ex}. Notice that in this example, the latent positions are all equal for nodes from the same community. In light of the results we explored in Section \ref{sec:ch5:psd_block:same_lp}, this is as we would expect for an $SBM_n(\vec z, B)$ random network.
@@ -218,7 +223,7 @@ d = 2  # the latent dimensionality
 # estimate the latent position matrix with ase
 Xhat = ase(n_components=d).fit_transform(A)
 \end{lstlisting}
-Using this estimate of the latent position matrix, we can also visualize an estimate of the probability matrix, as:
+Using this estimate of the latent position matrix, we can visualize an estimate of the probability matrix, as:
 \begin{align*}
     \hat P &= \hat X \hat X^\top.
 \end{align*}
@@ -229,7 +234,7 @@ Phat = Xhat @ Xhat.transpose()
 \end{lstlisting}
 We plot the estimated latent position matrix and probability matrix in Figure \ref{fig:ch6:ase:est}(A) and (B), and the true latent position matrix and probability matrix in Figure \ref{fig:ch6:ase:est}(C) and (D).
 
-In the example when we ran it, the estimated latent positions $\hat X$ look really similar to the true latent positions $X$. However, due to the fact that there is some randomness in how the \texttt{svd} algorithm is implemented in \texttt{numpy}, this won't always be the case, due to the non-identifiability issue that we noted in Section \ref{sec:ch6:spectral:nonidentifiable}. This means that your latent positions might be rotated around.
+In our example, the estimated latent positions $\hat X$ look really similar to the true latent positions $X$. However, because there is some randomness in how the \texttt{svd} algorithm is implemented in \texttt{numpy}, the non-identifiability issue that we noted in Section \ref{sec:ch6:spectral:nonidentifiable} means that your latent positions might be rotated around.
 
 Regardless of rotational issues, you should see that the estimated probability matrix $\hat P$ should be fairly similar to the true probability matrix $P$.
 
@@ -240,7 +245,7 @@ Regardless of rotational issues, you should see that the estimated probability m
     \label{fig:ch6:ase:est}
 \end{figure}
 
-Since we know the community labels of our network ahead of time, this pattern that you observe is pretty obvious. In particular, the first $50$ nodes (community $1$) tend to have similar latent position vectors, and the second $50$ nodes (community $2$) tend to have similar latent position vectors. In light of Section \ref{sec:ch5:psd_block:same_lp}, this intuitively should make sense to you: the true latent positions are {identical} for nodes in the same community, so it makes sense that the estimated latent positions will be at least close.
+Since we know the community labels of our network ahead of time, the pattern that we observe is pretty obvious. In particular, the first $50$ nodes (community $1$) tend to have similar latent position vectors, and the second $50$ nodes (community $2$) tend to have similar latent position vectors. In light of Section \ref{sec:ch5:psd_block:same_lp}, this intuitively should make sense to you: the true latent positions are {identical} for nodes in the same community, so it makes sense that the estimated latent positions will be at least close.
 
 Now, let's consider what happens when we randomly reorder the nodes of the network, just like we did in Section \ref{sec:ch5:sbm:modularity}:
 
@@ -265,16 +270,16 @@ Now, our adjacency matrix looks like Figure \ref{fig:ch6:ase:ase_permuted}(A), a
     \label{fig:ch6:ase:ase_permuted}
 \end{figure}
 
-\subsubsection{The ``pairs plot'' for estimated latent positions}
+\subsubsection*{The ``pairs plot'' for estimated latent positions}
 \label{sec:ch6:ase:reorder}
-One way to visualize tabular data structures is to use something called a ``pairs plot'', which you may have come across in machine learning. With a pairs plot, you visually investigate tabular data for \textit{latent structure}; that is, you to look for patterns that are hidden in a dataset.
+One way to visualize tabular data structures is to use something called a ``pairs plot''. With a pairs plot, you visually investigate tabular data for \textit{latent structure}; that is, you to look for patterns that are hidden in a dataset.
 
 To study the pairs plot, you can simply call the pairs plotting utility directly from graspologic:
 
 \begin{lstlisting}[style=python]
 from graspologic.plot import pairplot
 
-fig = pairplot(Xhat, title="Pairs plot of $\\hat X$")
+fig = pairplot(Xhat, title="Pairs plot of $\hat X$")
 \end{lstlisting}
 
 The pairs plot for the estimated latent positions is shown in Figure \ref{fig:ch6:ase:ase_permuted}(C). The pairs plot is a d x d matrix of plots, where d is the total number of features of the matrix for which a pairs plot is being produced. The plot is called a ``pairs'' plot because it plots “pairs” of dimensions. Notice that there are two distinct looking ``blobs'' of point clouds in the pairs plot of $\hat X$.
@@ -288,13 +293,13 @@ When the number of embedding dimensions is two, showing a full pairs plot is red
 Now, let's see what happens to the pairs plot for $\hat X$, which we pass in the community labels for the nodes:
 
 \begin{lstlisting}[style=python]
-fig = pairplot(Xhat_reordered, labels=zperm, legend_name = "Community",
+fig = pairplot(Xhat_perm, labels=zperm, legend_name = "Community",
              title="Pairs plot of randomly reordered $\\hat X$")
 \end{lstlisting}
 
-The resulting plot is shown in Figure \ref{fig:ch6:ase:ase_permuted}(D). Now we're getting somewhere! It looks like these two distinct ``blobs'' that we noticed in (C) each correspond to a single community in the underlying $SBM_n(\vec z, B)$ random network. In fact, nodes of the same community will tend to have estimated latent positions that are close together. When we say the vectors are ``close together'', what we really are talking about is with respect to the Euclidean distance. The Euclidean distance is:
+The resulting plot is shown in Figure \ref{fig:ch6:ase:ase_permuted}(D). Now we're getting somewhere! It looks like these two distinct ``blobs'' that we noticed in (C) each correspond to a single community in the underlying $SBM_n(\vec z, B)$ random network. In fact, nodes of the same community will tend to have estimated latent positions that are close together. When we say the vectors are ``close together'', what we really are talking about is with respect to the Euclidean distance. The Euclidean distance is defined in Concept \ref{def:ch6:se:eucl_dist}.
 
-\begin{floatingbox}[h]\caption{Euclidean distance between two vectors}
+\begin{floatingbox}[h]\caption{Concept: Euclidean distance between two vectors}
 \label{def:ch6:se:eucl_dist}
 
 If $\vec x = (x_i)_{i = 1}^d$ and $\vec y = (y_i)_{i = 1}^d$ are two $d$-dimensional real vectors, the \textit{Euclidean distance} is defined as:

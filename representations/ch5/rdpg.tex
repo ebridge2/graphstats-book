@@ -3,7 +3,7 @@
 
 Let's assume that you have $100$ people who live along a very long road that is $100$ miles long, and each person is $1$ mile apart. The nodes of your network represent the people who live along your assumed street, and the edges represent whether a given pair of people along the street are friends. However, there's a slight twist here: the people at the ends of the street are party hosts. If someone lives closer to one party host, they are going to tend to more frequently go to that host's parties than the other party host. Consequently, when someone lives near a party host, they are going to tend to be better friends with other people who go to that host's parties more frequently. How could you model such a situation?
 
-Mathematically, for each person, we could have a vector $\vec x_i$, that looks like this:
+Mathematically, for each person $i$, we could have a vector $\vec x_i$, that looks like this:
 \begin{align*}
     \vec x_i &= \begin{bmatrix}
         \frac{100 - i}{100} & \frac{i}{100}
@@ -30,9 +30,9 @@ So this means that person $1$ and person $30$ have a $70\%$ probability of being
 
 This feels like it might work out for us, so let's formalize it a little bit. We will do this with the Random Dot Product Graph (RDPG). This concept was first introduced by \cite{Young2007}. With the RDPG, you can have random networks which are much more complex than those you saw with the $ER_n(p)$ and the $SBM_n(\vec z, B)$ random networks, but {still} have a discernable structure to them.
 
-\subsection{Defining the RDPG}
+% \subsection{Defining the RDPG}
 
-\subsubsection{The latent position matrix}
+\subsection{The latent position matrix}
 
 We parameterize the RDPG using a matrix $X$ called the \textit{latent position matrix}. Each row $\vec x_i$ will be called the \textit{latent position of the node} $i$. In matrix form, $X$ looks like this:
 
@@ -45,10 +45,10 @@ We parameterize the RDPG using a matrix $X$ called the \textit{latent position m
  \end{bmatrix}
 \end{align*}
 
-We will call the columns of $X$ the \textit{latent dimensions}, and the total number of columns that $X$ has will be called the \textit{latent dimensionality}. We will often use the letter $d$ to denote the latent dimensionality of the latent position matrix $X$. For this reason, we say that $X$ is an $n$ row (one for each node) and $d$ column (one for each latent dimension) matrix. Therefore, the latent position of the node $i$, $\vec x_i$, is a $d$-dimensional vector. 
+We will call the columns of $X$ the \textit{latent dimensions}, and the total number of columns that $X$ has will be called the \textit{latent dimensionality}. We will often use the letter $d$ to denote the latent dimensionality of the latent position matrix $X$. For this reason, we say that $X$ is an $n$ row (one for each node) and $d$ column (one for each latent dimension) matrix, written as $X \in \mathcal{R}^{n \times d}$. Therefore, the latent position of the node $i$, $\vec x_i$, is a $d$-dimensional vector. 
 
 
-\subsubsection{Conceptualizing the RDPG}
+\subsection{Conceptualizing the RDPG}
 
 We call this model the RDPG because the probabilities of edges existing are based on {dot products} between pairs of latent positions for the different nodes in the network. The way that you can think of the RDPG random network is that the edges depend on a latent position matrix $X$. For each pair of nodes $i$ and $j$, you have a unique coin (we will call this the $(i,j)$ coin) which has a $\vec x_i^\top \vec x_j$ chance of landing on heads, and a $1 - \vec x_i^\top \vec x_j$ chance of landing on tails. If the $(i,j)$ coin lands on heads, the edge between nodes $i$ and $j$ exists, and if the $(i,j)$ coin lands on tails, the edge between nodes $i$ and $j$ does not exist. As before, this coin flip is performed independent of the coin flips for all of the other edges. If $\mathbf A$ is a random network which is $RDPG$ with a latent position matrix $X$, we say that $\mathbf A$ is an $RDPG_n(X)$ random network. 
 

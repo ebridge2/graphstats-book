@@ -129,7 +129,7 @@ is_loopless(A_loopy)
 
 \subsubsection{Unweighted networks either have an edge, or they don't}
 
-Do you need to convey information about how long it takes to get from borough $i$ to borough $j$ with your network? The broader fundamental question here -- whether an edge needs to carry extra information besides its existence - underlies the concept of {weightedness} in networks. In a weighted network, you could use {edge-weights} $w(i, j)$ to describe the amount of time it takes to get from borough $i$ to borough $j$. An \textit{edge-weight} $w(i,j)$ assigns a weight to an edge between nodes $i$ and $j$ if that edge exists. If you care about weightedness in the network, the network is called {weighted}. 
+Do you need to convey information about how long it takes to get from borough $i$ to borough $j$ with your network? The broader fundamental question here -- whether an edge needs to carry extra information besides its existence -- underlies the concept of {weightedness} in networks. In a weighted network, you could use {edge-weights} $w(i, j)$ to describe the amount of time it takes to get from borough $i$ to borough $j$. An \textit{edge-weight} $w(i,j)$ assigns a weight to an edge between nodes $i$ and $j$ if that edge exists. If you care about weightedness in the network, the network is called {weighted}. 
 
 The potential edges $a_{ij}$ of $A$ for a weighted network take the value of the edge-weight; that is, $a_{ij} = w(i, j)$ for any edge which exists between nodes $i$ and $j$. In the below plot, edge-weight indicates the approximate time to travel from one borough to the other. The network is undirected, so you don't have to worry about directionality differences. The edge-weight is indicated by the number along the corresponding edge.
 
@@ -157,9 +157,7 @@ nx.draw_networkx(G_weight, with_labels=True, node_color="black", pos=pos,
 
 heatmap(A_weight, xticklabels=["SI", "MH", "BK", "Q", "BX"],
         yticklabels=["SI", "MH", "BK", "Q", "BX"], title="Weighted adjacency matrix", 
-        font_scale=1.3
-       ).set(xlabel="Borough", ylabel="Borough")
-
+        font_scale=1.3, xtitle="Borough", ytitle="Borough")
 \end{lstlisting}
 We can identify whether a network is unweighted using \texttt{is\_unweighted()}:
 
@@ -270,20 +268,7 @@ D_out = np.diag(A_dir.sum(axis=0))
 # summing row-wise to get in-degree
 D_in = np.diag(A_dir.sum(axis=1))
 \end{lstlisting}
-
-Incidentally, you can equivalently use matrix multiplication here to get the same results, by matrix-multiplying a vector of ones:
-
-\begin{lstlisting}[style=python]
-ones = np.ones(len(A_dir))
-
-D_in_mat = np.diag(A_dir @ ones)
-D_out_mat = np.diag(A_dir.T @ ones)
-
-assert np.array_equal(D_in, D_in_mat)
-assert np.array_equal(D_out, D_out_mat)
-\end{lstlisting}
-
-This is what you'd do in practice, since matrix-multiplication and dot products are highly optimized operations.
+% @AL: np.sum() is already heavily accelerated, much more so than any matrix multiplication routine, as it is specifically designed for a matrix multiplication with the 1-vector. see the code in numpy.
 
 \paragraph{Degrees for weighted networks}
 
@@ -361,7 +346,7 @@ We wrote out the double sum here because there is a key relationship that we wan
 \begin{align}
     density(A) &= \frac{\frac{1}{2}\sum_{i = 1}^n d_i}{\binom n 2} = \frac{\sum_{i = 1}^n d_i}{n(n - 1)} \label{eqn:ch4:density_degree}
 \end{align}
-As a final note, notice that $\frac{1}{n}\sum_{i = 1}^n d_i$ is the \textit{average degree} over sll of the $n$ nodes in the network. We will typically abbreviate this quantity using the symbol $d$. Using this fact with the right-most equality in Equation \eqref{eqn:ch4:density_degree}, we see that:
+As a final note, notice that $\frac{1}{n}\sum_{i = 1}^n d_i$ is the \textit{average degree} over all of the $n$ nodes in the network. We will typically abbreviate this quantity using the symbol $d$. Using this fact with the right-most equality in Equation \eqref{eqn:ch4:density_degree}, we see that:
 \begin{align*}
     density(A) &= \frac{d}{n - 1}.
 \end{align*}
@@ -531,7 +516,7 @@ G_withbos.add_node("BO", pos=(8, 6))
 G_withbos.add_node("CA", pos=(8, 8))
 G_withbos.add_edge("BO", "CA")
 # fetch positions with boston and cambridge added
-pos = nx.get_node_attributes(G_with_bos, 'pos')
+pos = nx.get_node_attributes(G_withbos, 'pos')
 # plot
 nx.draw_networkx(G_withbos, with_labels=True, node_color="black", pos=pos,
                 font_color="white", edge_color="black")

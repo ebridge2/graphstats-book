@@ -11,7 +11,7 @@ A common matrix representation of a network is called the Adjacency Matrix, and 
 
 \subsection{Adjacency Matrices}
 
-Throughout this book, the beating heart of matrix representations of networks that we will see is the adjacency matrix \cite{Godsil}. The idea is pretty straightforward: Let's say you have a network with $n$ nodes. You give each node an index (usually some value between $1$ and $n$, with one value per node) and then you create an $n \times n$ matrix. If there is an edge between node $i$ and node $j$, you fill the $(i, j)^{th}$ and $(j, i)^{th}$ values of the matrix with an entry, usually $1$ if your network has unweighted edges. In the case of undirected networks, you end up with a symmetric matrix with full of $1$s and $0$s, which completely represents the topology of your network.
+Throughout this book, the beating heart of matrix representations of networks that we will see is the adjacency matrix \cite{Godsil}. The idea is pretty straightforward: Let's say we have a network with $n$ nodes. We give each node an index (usually some value between $1$ and $n$, with one value per node) and then we create an $n \times n$ matrix. If there is an edge between node $i$ and node $j$, we fill the $(i, j)^{th}$ and $(j, i)^{th}$ values of the matrix with an entry, usually $1$ if our network has unweighted edges. In the case of undirected networks, we end up with a symmetric matrix with full of $1$s and $0$s, which completely represents the topology of our network.
 
 Let's see this in action. We'll make a network with only three nodes, since that's small and easy to understand, and then we'll show what it looks like as an adjacency matrix. To visualize this network, we'll use something called a layout plot, provided by \texttt{nx.draw\_network()}.
 
@@ -54,8 +54,9 @@ import seaborn as sns
 A = np.asarray(nx.to_numpy_matrix(G))
 
 heatmap(A, annot=True, linewidths=.1, cbar=False, 
-        title="Adjacency matrix", xticklabels=[1,2,3], yticklabels=[1,2,3]
-       ).set(xlabel="node", ylabel="node");
+        title="Adjacency matrix", xticklabels=[1,2,3], xtitle="Node", 
+        yticklabels=[1,2,3], ytitle="Node"
+       )
 
 
 \end{lstlisting}
@@ -71,9 +72,9 @@ The resulting adjacency matrix is shown in Figure \ref{fig:ch4:basic_mtxs}(B). A
 
 \subsection{The degree matrix}
 
-The degree matrix isn't a full representation of our network, because you wouldn't be able to reconstruct an entire network from a degree matrix. However, it's fairly straightforward and it pops up relatively often as a step in creating other matrices, so the degree matrix is useful to mention. It's just a diagonal matrix with the values along the diagonal corresponding to the number of each edges each node has, also known as the \textit{degree} of each node. You'll learn more about the degree matrix in Section \ref{sec:ch4:prop-net}.
+The degree matrix isn't a full representation of our network, because we wouldn't be able to reconstruct an entire network from a degree matrix. However, it's fairly straightforward and it pops up relatively often as a step in creating other matrices, so the degree matrix is useful to mention. It's just a diagonal matrix with the values along the diagonal corresponding to the number of each edges each node has, also known as the \textit{degree} of each node. We'll learn more about the degree matrix in Section \ref{sec:ch4:prop-net}.
 
-You can see the degree matrix for our network below. The diagonal element corresponding to node $1$ has the value of two, since it has two edges; the rest of the nodes have a value of $1$, since they each are only connected to the first node.
+We can see the degree matrix for our network below. The diagonal element corresponding to node $1$ has the value of two, since it has two edges; the rest of the nodes have a value of $1$, since they each are only connected to the first node.
 
 \begin{lstlisting}[style=python]
 # Build the degree matrix D
@@ -99,7 +100,7 @@ The standard, cookie-cutter Laplacian Matrix $L$ \cite{Chung1996Dec} is just the
 
 Since the only nonzero values of the degree matrix is along its diagonals, and because the diagonals of an adjacency matrix never contain zeroes if its network doesn't have nodes connected to themselves, the diagonals of the Laplacian are just the degree of each node. The values on the non-diagonals work similarly to the adjacency matrix: they contain a $-1$ if there is an edge between the two nodes, and a $0$ if there is no edge.
 
-The code below shows you what the Laplacian looks like. Since each node has exactly two edges, the degree matrix is just a diagonal matrix of all twos. The Laplacian looks like the degree matrix, but with -1's in all the locations where an edge exists between nodes $i$ and $j$. You can compute it using:
+The code below shows us what the Laplacian looks like. Since each node has exactly two edges, the degree matrix is just a diagonal matrix of all twos. The Laplacian looks like the degree matrix, but with -1's in all the locations where an edge exists between nodes $i$ and $j$. We can compute it using:
 
 \begin{lstlisting}[style=python]
 L = D - A
@@ -113,7 +114,7 @@ A plot of the Laplacian matrix as a heatmap, along with the degree and adjacency
     \label{fig:ch4:simple_lap}
 \end{figure}
 
-We use the Laplacian in practice because it has a number of interesting mathematical properties which tend to be useful for analysis. For instance, the magnitude of its second-smallest eigenvalue, called the Fiedler eigenvalue, tells you how well-connected your network is -- the number of eigenvalues equal to zero is the number of connected components your network has (a concept you will be introduced to in Section \ref{sec:ch4:prop-net:lcc}). Incidentally, this means that the smallest eigenvalue of the Laplacian will always be 0, since any simple network always has at least one ``island''. You don't need to have too much intuition for what eigenvalues mean, but just be aware that they will matter somewhat later on for now.
+We use the Laplacian in practice because it has a number of interesting mathematical properties which tend to be useful for analysis. For instance, the magnitude of its second-smallest eigenvalue, called the Fiedler eigenvalue, tells us how well-connected our network is -- the number of eigenvalues equal to zero is the number of connected components our network has (a concept you will be introduced to in Section \ref{sec:ch4:prop-net:lcc}). Incidentally, this means that the smallest eigenvalue of the Laplacian will always be 0, since any simple network always has at least one ``island''. We don't need to have too much intuition for what eigenvalues mean, but just be aware that they will matter somewhat later on for now.
 
 Another interesting property of the Laplacian is that the sum of its diagonals is twice the number of edges in the network. Because the sum of the diagonal matrix is the trace, and the trace is also equal to the sum of the eigenvalues, this means that the sum of the eigenvalues of the Laplacian is equal to twice the number of edges in the network.
 
@@ -130,7 +131,7 @@ There are a few variations on the standard $D-A$ version of the Laplacian which 
 
 Where $I$ is the identity matrix (the square matrix with all zeroes except for ones along the diagonal). You can work through the algebra yourself if you'd like to verify that the second expression is the same as the third.
 
-Below you can see the normalized Laplacian in code. We use \texttt{graspologic}'s \texttt{to\_laplacian()} function, with the \texttt{form} set to \texttt{I - DAD}, which computes $L^{norm.}$ above.
+Below we can see the normalized Laplacian in code. We use \texttt{graspologic}'s \texttt{to\_laplacian()} function, with the \texttt{form} set to \texttt{I - DAD}, which computes $L^{norm.}$ above.
  
 \begin{lstlisting}[style=python]
 from graspologic.utils import to_laplacian
@@ -138,9 +139,9 @@ L_sym = to_laplacian(A, form="I-DAD")
 \end{lstlisting}
 A heatmap of the normalized Laplacian is shown in Figure \ref{fig:ch4:normlapl}(A).
 
-You can understand the normalized Laplacian from the name: you can think of it as the Laplacian normalized by the degrees of the nodes associated with a given entry.
+We can understand the normalized Laplacian from the name: we can think of it as the Laplacian normalized by the degrees of the nodes associated with a given entry.
 
-You can see this by looking at what the operation is doing:
+We can see this by looking at what the operation is doing:
 
 \begin{align*}
     L^{norm.} &= D^{-\frac{1}{2}}L D^{-\frac{1}{2}} \\
@@ -190,24 +191,24 @@ We can plug in the value of $L$ to obtain a similar relationship with the adjace
     &= I_{n \times n} - D^{-\frac{1}{2}}A D^{-\frac{1}{2}}
 \end{align*}
 
-The $D^{-1/2} D D^{-1/2}$ term is spiritually the same as what you'd think of $\frac{D}{D}$ (if that was defined!), since it just works out to be the identity matrix. The $D^{-1/2} A D^{-1/2}$ is just doing the same thing to $A$ that you did to $L$. So you're normalizing the entries of the adjacency matrix by the degrees of the nodes a given entry is concerned with; that is, $\frac{a_{ij}}{\sqrt{d_i}\sqrt{d_j}}$.
+The $D^{-1/2} D D^{-1/2}$ term is spiritually the same as what we'd think of $\frac{D}{D}$ (if that was defined!), since it just works out to be the identity matrix. The $D^{-1/2} A D^{-1/2}$ is just doing the same thing to $A$ that we did to $L$. So we're normalizing the entries of the adjacency matrix by the degrees of the nodes a given entry is concerned with; that is, $\frac{a_{ij}}{\sqrt{d_i}\sqrt{d_j}}$.
 
-One useful property of the normalized Laplacian is that its eigenvalues are bounded between 0 and 2. This normalization tends to be useful, because the Laplacian is a thing called a \emph{positive semi-definite matrix}. This means that a suite of linear algebra techniques, which may \emph{not} run successfully on the adjacency matrix (which is \emph{not} positive semi-definite in its most raw form for \emph{simple networks}, which you will learn about in the next chapter), can be executed on the network Laplacian. For more details about the properties of the Laplacian, check out \cite{Li2014Dec}.
+One useful property of the normalized Laplacian is that its eigenvalues are bounded between 0 and 2. This normalization tends to be useful, because the Laplacian is a thing called a \emph{positive semi-definite matrix}. This means that a suite of linear algebra techniques, which may \emph{not} run successfully on the adjacency matrix (which is \emph{not} positive semi-definite in its most raw form for \emph{simple networks}, which we will learn about in the next chapter), can be executed on the network Laplacian. For more details about the properties of the Laplacian, check out \cite{Li2014Dec}.
 
 \subsection{The \texttt{DAD} Laplacian}
 \label{sec:ch4:mtx-rep:dad_laplacian}
 
-In this book, a lot of what we will cover will be something called a \emph{spectral embedding} of the Laplacian. While you will learn all about this in Section \ref{ch6:spectral}, there are some fine points we want to cover here. As it turns out, there is another, \emph{related}, definition of a Laplacian, which we call the \texttt{DAD} Laplacian:
+In this book, a lot of what we will cover will be something called a \emph{spectral embedding} of the Laplacian. While we will learn all about this in Section \ref{sec:ch6:lse}, there are some fine points we want to cover here. As it turns out, there is another, \emph{related}, definition of a Laplacian, which we call the \texttt{DAD} Laplacian:
 
 \begin{align*}
     L^{DAD} &= D^{-\frac{1}{2}}A D^{-\frac{1}{2}}
 \end{align*}
 
-$L^{DAD}$ and $L^{norm.}$ share some major similarities which are important to note here. Later in the book in Section \ref{ch6:spectral}, you will learn about the importance of the singular value decomposition for spectral embedding of Laplacians. Basically, what the singular value decomposition will allow you to do is look at the laplacian as a sum of much \emph{simpler} matrices. By ``simple'', what we mean here is that they can be represented as the product of two vectors. By looking only at the first few of these "simple" matrices, you can learn about the Laplacian and reduce a lot of noise in the Laplacian itself. The properties of looking at the \texttt{DAD} Laplacian are discussed at length in \cite{Chaudhuri2012Jun} and \cite{Amini2012Jul},
+$L^{DAD}$ and $L^{norm.}$ share some major similarities which are important to note here. Later in the book in Section \ref{sec:ch6:lse}, you will learn about the importance of the singular value decomposition for spectral embedding of Laplacians. Basically, what the singular value decomposition will allow us to do is look at the laplacian as a sum of much \emph{simpler} matrices. By ``simple'', what we mean here is that they can be represented as the product of two vectors. By looking only at the first few of these ``simple'' matrices, we can learn about the Laplacian and reduce a lot of noise in the Laplacian itself. The properties of looking at the \texttt{DAD} Laplacian are discussed at length in \cite{Chaudhuri2012Jun} and \cite{Amini2012Jul},
 
-The most important connection is that these "simple" matrices will be \emph{identical} for $L^{norm.}$ and $L^{DAD}$, except for one important fact: they will be in \emph{reverse} order from one another. In $L^{norm.}$, the matrices you will want to use will be the last few, and in $L^{DAD}$, the matrices you will want to use will be the first few. When you compute the singular value decomposition, there are ways to only compute the first few matrices without having to go through the trouble of computing \emph{all} of them, whereas the reverse is not true! To get the last few simple matrices, you would have to compute all of the preceding ones first. This means that to get the simple matrices you want, you can get much better computational performance using $L^{DAD}$ instead of $L^{norm.}$.
+The most important connection is that these "simple" matrices will be \emph{identical} for $L^{norm.}$ and $L^{DAD}$, except for one important fact: they will be in \emph{reverse} order from one another. In $L^{norm}$, the matrices we will want to use will be the last few, and in $L^{DAD}$, the matrices we will want to use will be the first few. When we compute the singular value decomposition, there are ways to only compute the first few matrices without having to go through the trouble of computing \emph{all} of them, whereas the reverse is not true! To get the last few simple matrices, we would have to compute all of the preceding ones first. This means that to get the simple matrices we want, we can get much better computational performance using $L^{DAD}$ instead of $L^{norm}$.
 
-You can compute the $L^{DAD}$ in \texttt{graspologic} similarly to above, but with \texttt{form="DAD"}:
+We can compute the $L^{DAD}$ in \texttt{graspologic} similarly to above, but with \texttt{form="DAD"}:
 
 \begin{lstlisting}[style=python]
 L_dad = to_laplacian(A, form="DAD")
@@ -217,22 +218,22 @@ A heatmap of the \texttt{DAD} Laplacian is shown in Figure \ref{fig:ch4:normlapl
 
 \subsection{The regularized Laplacian}
 \label{ch4:mtx-rep:reg_laplacian}
-The regularized Laplacian is an adaptation of the \texttt{DAD} Laplacian you learned about in the previous section. As it turns out, when networks have degree matrices where some of the degrees are really, really small, the \emph{spectral clustering} approach you will learn about in Section \ref{ch6:spectral} is simply not going to perform very well. When we say it is not going to perform very well, what we mean is that the spectral clusterings are going to be extremely influenced by these nodes with really small node degrees. To overcome this hurdle, instead of using the \texttt{DAD} Laplacian, you can use the regularized Laplacian, defined extremely similarly to the \texttt{DAD} Laplacian, as:
+The regularized Laplacian is an adaptation of the \texttt{DAD} Laplacian we learned about in the previous section. As it turns out, when networks have degree matrices where some of the degrees are really, really small, the \emph{spectral clustering} approach we will learn about in Section \ref{sec:ch7:comm_detect} is simply not going to perform very well. When we say it is not going to perform very well, what we mean is that the spectral clusterings are going to be extremely influenced by these nodes with really small node degrees. To overcome this hurdle, instead of using the \texttt{DAD} Laplacian, we can use the regularized Laplacian, defined extremely similarly to the \texttt{DAD} Laplacian, as:
 
 \begin{align*}
     L^{rDAD}(\tau) &= D_\tau^{-\frac{1}{2}}A D_\tau^{-\frac{1}{2}}
 \end{align*}
 
-Where $\tau$ is a regularization constant which is greater than or equal to zero, and $D_\tau = D + \tau I$. When we put $\tau$ in parentheses here (that is, $(\tau)$), all that we mean is that $L^{rDAD}$ is a function of the particular regularization constant that you choose. Basically, what this is going to do is just "inflate" the diagonal elements of the degree matrix. So, if the degree for some of the nodes is extremely small, when we add a constant $\tau$ to them, we can increase the degrees by $\tau$. In effect, what this will do is make the nodes with really small degrees (which, like we said, might cause issues in the spectral clustering) a lot less impactful on the results that you obtain. Also, as you can see, if $\tau = 0$, then $L^{rDAD}(\tau) = L^{DAD}$. The regularized Laplacian is discussed at length in \cite{Qin2013Sep}.
+Where $\tau$ is a regularization constant which is greater than or equal to zero, and $D_\tau = D + \tau I$. When we put $\tau$ in parentheses here (that is, $(\tau)$), all that we mean is that $L^{rDAD}$ is a function of the particular regularization constant that we choose. Basically, what this is going to do is just "inflate" the diagonal elements of the degree matrix. So, if the degree for some of the nodes is extremely small, when we add a constant $\tau$ to them, we can increase the degrees by $\tau$. In effect, what this will do is make the nodes with really small degrees (which, like we said, might cause issues in the spectral clustering) a lot less impactful on the results that we obtain. Also, as we can see, if $\tau = 0$, then $L^{rDAD}(\tau) = L^{DAD}$. The regularized Laplacian is discussed at length in \cite{Qin2013Sep}.
 
-Let's take a look at what $L^{rDAD}(\tau)$ and $L^{DAD}$ look like when we pick $\tau$ to be $1$. You can do this in \texttt{graspologic} using \texttt{form="R-DAD"}, and then setting \texttt{regularizer} appropriately:
+Let's take a look at what $L^{rDAD}(\tau)$ and $L^{DAD}$ look like when we pick $\tau$ to be $1$. We can do this in \texttt{graspologic} using \texttt{form="R-DAD"}, and then setting \texttt{regularizer} appropriately:
 \begin{lstlisting}[style=python]
 tau = 1
 L_rdad = to_laplacian(A, form="R-DAD", regularizer=tau)
 \end{lstlisting}
 The \texttt{R-DAD} Laplacian is shown in Figure \ref{fig:ch4:normlapl}(C).
 
-You will learn about some other ways to handle nodes with very low degrees in Section \ref{sec:ch4:regularization} on Regularization.
+We will learn about some other ways to handle nodes with very low degrees in Section \ref{sec:ch4:regularization} on Regularization.
 
 \begin{figure}[h]
     \centering

@@ -1,19 +1,13 @@
 \chapter{Applications when you have networks}
 \label{sec:ch8}
 
-In this section, we'll proceed much the same as the preceding section. We'll learn how to learn from networks, but particularly in the case where you have two networks. When you have two networks, there are some nuances to analytical procedures that arise, and many special questions that you can ask between the two networks. We'll cover a few here.
+In this section, we'll proceed much the same as the preceding section. We'll learn how to learn from networks, but particularly in the case where you have two networks. When you have two networks, there are some nuances to analytical procedures that arise, and many special questions that you can ask between the two networks. 
 
-\begin{enumerate}
-    \item Section \ref{sec:ch8:twosample} provides methods for testing whether a pair of RDPGs are different, the two-sample testing problem.
-    \item Section \ref{sec:ch8:twosamplesbm} shows a special-case of the two-sample testing problem when the networks are SBMs.
-    \item Section \ref{sec:ch8:gm} introduces the graph matching problem for aligning two networks.
-    \item Section \ref{sec:ch8:vnviasgm} shows how we can identify similar nodes across a pair of networks using strategies that we developed for graph matching.
-\end{enumerate}
+In particular, when we have two networks, we can start to make explicit comparisons across networks assuming they are sufficiently similar. In general, this means that we will assume that the networks that we are comparing have the same nodes, and that the edges are the only things that (might) differ across them. In this case, we can learn properties about network models, and make comparisons between the networks by studying how similar (or different) these properties are between the networks. When the networks are not sufficiently similar, in that their node sets are not necessarily the same, we will finish the chapter off by discussing strategies to align (or, \textit{match}) the nodes to make the node sets near equivalent between the networks. 
 
 \input{applications/ch8/twosample}
 \input{applications/ch8/twosamplesbm}
 \input{applications/ch8/gm}
-\input{applications/ch8/vnviasgm}
 
 \bibliographystyle{vancouver}
 \bibliography{references}

@@ -5,15 +5,15 @@ Let's imagine that you have $100$ students, each of whom can go to one of two po
 
 The Stochastic Block Model, or SBM, captures this idea by assigning each of the $n$ nodes in the network to one of $K$ communities, and was first introduced by \cite{Holland1983Jun}. A \textit{community} is a group of nodes within the network which have similar properties. In your example case, the communities would represent the schools that students are able to attend. We use $K$ here to just denote an integer greater than $1$ (for example, in the school example we gave above, $K$ is $2$) for the number of {possible} communities that nodes could be members of. In an SBM, instead of describing all pairs of nodes with a fixed probability like with the ER model, you instead describe properties that hold for edges between {pairs of communities}. In your example, what this means is that if two students go to school one, the probability that they are friends might be different than if the two students went to school two, or if one student went to school one and the other to school two.
 
-\subsection{Defining the SBM random network}
-\subsubsection{The community assignment vector assigns nodes in the random network to communities}
+% \subsection{Defining the SBM random network}
+\subsection{The community assignment vector assigns nodes in the random network to communities}
 
-To describe an SBM random network, we proceed very similarly to an ER random network, with a twist. An SBM random network has a parameter, $\vec z$, which has a single element for each of the node. We call $\vec z$ the \textit{community assignment vector}, which means that for each node of your random network, $z_i$ tells you which community the node is in. To state this another way, $\vec z$ is a vector where each element $z_i$ can take one of $K$ possible values, where $K$ is the total number of communities in the network. For example, if you had an SBM random network with four nodes in total, and two total communities, each element $z_i$ can be either $1$ or $2$. If the first two nodes were in community $1$, and the second two in community $2$, you would say that $z_1 = 1$, $z_2 = 1$, $z_3 = 2$, and $z_4 = 2$, which means that $\vec z$ looks like:
+To describe an SBM random network, we proceed very similarly to an ER random network, with a twist. An SBM random network has a parameter, $\vec z$, which has a single element for each of the nodes. We call $\vec z$ the \textit{community assignment vector}, which means that for each node of your random network, $z_i$ tells you which community the node is in. To state this another way, $\vec z$ is a vector where each element $z_i$ can take one of $K$ possible values, where $K$ is the total number of communities in the network. For example, if you had an SBM random network with four nodes in total, and two total communities, each element $z_i$ can be either $1$ or $2$. If the first two nodes were in community $1$, and the second two in community $2$, you would say that $z_1 = 1$, $z_2 = 1$, $z_3 = 2$, and $z_4 = 2$, which means that $\vec z$ looks like:
 
 \begin{align*}
     \vec z &= \begin{bmatrix}1 \\ 1 \\ 2 \\ 2\end{bmatrix}
 \end{align*}
-\subsubsection{The block matrix defines the edge existence probabilities between communities in the random network}
+\subsection{The block matrix defines the edge existence probabilities between communities in the random network}
 
 The other parameter for an SBM random network is called the block matrix, for which we will use the capital letter $B$. If there are $K$ communities in the SBM random network, then $B$ is a $K \times K$ matrix, with one entry for each pair of communities. For instance, if $K$ were two like above, $B$ would be a $2 \times 2$ matrix, and would look like this:
 \begin{align*}
@@ -23,7 +23,7 @@ The other parameter for an SBM random network is called the block matrix, for wh
 \end{align*}
 Each of the entries of $B$, which we denote as $b_{kl}$ in the above matrix, is a probability of an edge existing between a node in community $k$ and a node in community $l$. 
 
-\subsubsection{Conceptualizing the SBM}
+\subsection{Conceptualizing the SBM}
 
 Fortunately, you can also think of this formulation of a random network using coin flips. In your mini example above, if node $1$ is in community $1$ (since $z_1 = 1$) and node $2$ is in community $1$ (since $z_2 = 1$), you have a weighted coin which has a probability $b_{11}$ (the first row, first column of the block matrix above) of landing on heads, and a $1 - b_{11}$ chance of landing on tails. An edge between nodes one and two exists if the weighted coin lands on heads, and does not exist if that weighted coin lands on tails. If you wanted to describe an edge between nodes one and three instead, note that $z_3 = 2$. Therefore, you use the entry $b_{12}$ as the probability of obtaining a heads for the weighted coin you flip this time. In the general case, to use the block matrix to obtain the probability of an edge $(i, j)$ existing between any pair of nodes $i$ and $j$, you will flip a coin with probability $b_{z_i z_j}$, where $z_i$ is the community assignment for the $i^{th}$ node and $z_j$ is the community assignment for the $j^{th}$ node.
 
@@ -54,7 +54,7 @@ For each pair of communities $k$ and $l$, obtain a weighted coin (which we will 
 
 We just covered a lot of intuition! This intuition will come in handy later, but let's take a break from the theory by working through an example. Let's use the school example we started above. Say you have $100$ students, and you know that each student goes to one of two possible schools. Remember that you already know the community assignment vector $\vec{z}$ ahead of time. We don't really care too much about the ordering of the students for now, so let's just assume that the first $50$ students all go to the first school, and the second $50$ students all go to the second school. 
 
-\begin{floatingbox}[h]\caption{Though exercise}
+\begin{floatingbox}[h]\caption{Thought exercise}
 Think to yourself what you would expect the node assignment vector and the probability matrix to look like.
 \end{floatingbox}
 
@@ -68,7 +68,7 @@ n = 100  # number of students
 
 # z is a column vector of 50 1s followed by 50 2s
 # this vector gives the school each of the 100 students are from
-z = np.array([1 for i in range(0, n//2)] + [2 for i in range(0, n//2)])
+z = np.repeat([1, 2], repeats=n//2)
 plot_vector(z, title="$\\vec z$, Node Assignment Vector",
             legend_title="School", color="qualitative", 
             ticks=[0.5, 49.5, 99.5], ticklabels=[1, 50, 100],
@@ -84,14 +84,14 @@ We can make a block matrix and plot it using the \texttt{heatmap()} utility that
 \begin{lstlisting}[style=python]
 from graphbook_code import heatmap
 
-K = 2  # 2 communities in total
+K = 2  # community count
 # construct the block matrix B as described above
 B = np.array([[0.6, 0.1], 
               [0.1, 0.4]])
 
-ax = heatmap(B, xticklabels=[1, 2], yticklabels=[1,2], vmin=0, 
-             vmax=1, annot=True, title="$B$, xtitle="School",
-             ytitle="School", title="Block Matrix")
+heatmap(B, xticklabels=[1, 2], yticklabels=[1,2], vmin=0, 
+             vmax=1, annot=True, xtitle="School",
+             ytitle="School", title="Block Matrix $B$")
 \end{lstlisting}
 
 As you can see in Figure \ref{fig:ch5:sbm}(B), the matrix $B$ is a symmetric block matrix, since your network is undirected. 
@@ -111,7 +111,7 @@ from graphbook_code import draw_multiplot
 
 # sample a graph from SBM_{100}(tau, B)
 A = sbm(n=[n//2, n//2], p=B, directed=False, loops=False)
-ys = [1 for i in range(0, 50)] + [2 for i in range(0, 50)]
+ys = np.repeat([1, 2], 50)
 draw_multiplot(A, labels=ys, title="$SBM_n(z, B)$ Simulation");
 \end{lstlisting}
 
@@ -124,10 +124,10 @@ When the nodes are ordered by community, we will often refer to ``patches'' (for
 In this case, the \textit{modular} structure simply suggests that the different blocks (distinguished by the communities of the different nodes) are readily apparent.
 
 
-\subsubsection{Modularity is not a pre-requisite for $SBM_n(\vec z, B)$ random networks}
+\subsection{Modularity is not a pre-requisite for $SBM_n(\vec z, B)$ random networks}
 \label{sec:ch5:sbm:modularity}
 
-Something easy to mistake about a sample of an SBM is that the samples will {not always} have the obvious modular structure you can see in Figure \ref{fig:ch5:sbm_adj}(A) when you look at a heatmap. Rather, this modular structure is {only} made obvious because the students are ordered according to the school in which they are in. What do you think will happen if you look at the students in a random order? Do you think that he structure that exists in this network will be obvious?
+Something easy to mistake about a sample of an SBM is that the samples will {not always} have the obvious modular structure you can see in Figure \ref{fig:ch5:sbm_adj}(A) when you look at a heatmap. Rather, this modular structure is {only} made obvious because the students are ordered according to the school in which they are in. What do you think will happen if you look at the students in a random order? Do you think that the structure that exists in this network will be obvious?
 
 The answer is: {No!} Let's see what happens when we reorder the nodes from the network into a random order, and pretend you don't know the true community labels ahead of time:
 
@@ -135,10 +135,10 @@ The answer is: {No!} Let's see what happens when we reorder the nodes from the n
 import numpy as np
 
 # generate a reordering of the n nodes
-vtx_perm = np.random.choice(n, size=n, replace=False)
+permutation = np.random.choice(n, size=n, replace=False)
 
-Aperm = A[tuple([vtx_perm])] [:,vtx_perm]
-yperm = np.array(ys)[vtx_perm]
+Aperm = A[permutation][:,permutation]
+yperm = ys[permutation]
 heatmap(Aperm, title="Nodes randomly reordered")
 \end{lstlisting}
 
@@ -150,13 +150,13 @@ heatmap(Aperm, title="Nodes randomly reordered")
 \end{figure}
 In Figure \ref{fig:ch5:sbm_adj}(B), the students are {not} organized according to school, because they have been randomly reordered. It becomes pretty tough to figure out whether there are communities just by looking at the adjacency matrix, unless you are looking at a network in which the nodes are {already arranged} in an order which respects the community structure. By an {order that respects the community structure}, we mean that the community assignment vector $\vec z$ is arranged so that all of the nodes in the first community come first, followed by all of the nodes in the second community, followed by all of the nodes in the third community, so on and so forth up to the nodes of the community $K$.
 
-In practice, this means that if you know ahead of time what natural groupings of the nodes might be (such as knowing which school each student goes to) by way of your node attributes, you can visualize your data according to that grouping. This property is covered more in depth by \cite{Abbe2017Mar}. If you don't know anything about natural groupings of nodes, however, you are left with the problem of {estimating community structure}. A later method, called the {spectral embedding} in {numref}`ch6:spectral`, will be paired with clustering techniques to allow you to estimate node assignment vectors. 
+In practice, this means that if you know ahead of time what natural groupings of the nodes might be (such as knowing which school each student goes to) by way of your node attributes, you can visualize your data according to that grouping. This property is covered more in depth by \cite{Abbe2017Mar}. If you don't know anything about natural groupings of nodes, however, you are left with the problem of {estimating community structure}. A later method, called the {spectral embedding} in Section \ref{sec:ch6:spectral}, will be paired with clustering techniques to allow you to estimate node assignment vectors. 
 
 We'll conclude off this section by showing that the previous random network model you saw, the ER random networks, are special cases of SBM random networks. These properties will become useful as you build more and more complex random network models, because when you develop techniques for more complex random network models in later chapters, they will extend directly to any network model which is a special case of that random network model.
 
 \subsection{ER random networks are special cases of SBM random networks}
 
-Let's imagine that you have a random network $\mathbf A$ which is $ER_n(p)$. Could you take this random network and turn it into an SBM? More specifically, does there exist an SBM such that the edge-existence probabilities are the same as the $ER_n(p)$ random network, for {every} edge in the network?
+Let's imagine that you have a random network $\mathbf A$ which is $ER_n(p)$, an Erd\"os-R\'enyi network with probability $p$. Could you take this random network and turn it into an SBM? More specifically, does there exist an SBM such that the edge-existence probabilities are the same as the $ER_n(p)$ random network, for {every} edge in the network?
 
 The answer is {always} a yes! This is extremely easy. Take the number of edge communities for the corresponding SBM to be $1$, and assign every node to the first community. Next, take the block matrix to have a single entry, $b_{11} = p$. And you are done! $\mathbf A$ is also an $SBM_n(\vec z, B)$ random network, where $\vec z$ is a vector of ones, and $B$ is a $1 \times 1$ matrix (really, just a scalar) whose only entry is $p$.
 

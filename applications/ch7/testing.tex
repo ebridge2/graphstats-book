@@ -33,7 +33,7 @@ A = siem(n, p, D)
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{applications/ch7/Images/testing_siem_ex.png}
-    \caption{\textbf{(A)} the edge-cluster assignment matrix, \textbf{(B)} the adjacency matrix, \textbf{(C)} a contingency table for the two edge-clusters in the network sample.}
+    \caption[SIEM Testing]{\textbf{(A)} the edge-cluster assignment matrix, \textbf{(B)} the adjacency matrix, \textbf{(C)} a contingency table for the two edge-clusters in the network sample.}
     \label{fig:ch7:testing:siem_ex}
 \end{figure}
 The edge cluster assignment matrix $C$ is shown in Figure \ref{fig:ch7:testing:siem_ex}(A), and a sample of the network is shown in Figure \ref{fig:ch7:testing:siem_ex}(B). When we look at the network in Figure \ref{fig:ch7:testing:siem_ex}(B), the edges corresponding to edge-cluster $2$ in Figure \ref{fig:ch7:testing:siem_ex}(A) look to stand out a little bit from the other edges, but it looks far from definitive at a glance. We can compute the estimated edge probabilities (per edge-cluster) using the below code:
@@ -50,7 +50,7 @@ print(est_pvec)
 So the estimated edge probabilities appear to be quite different just looking at the sample. When we observe the sample, we don't at first glance know that the underlying random network truly has a different probability for each edge cluster. We only see the network sample, which will never perfectly reflect the underlying random network model that we think is appropriate for the sample. This means that if we want to determine whether the estimated edge probabilities are appreciably different, we have some work to do.
 
 \subsection{Two-sample hypothesis testing}
-
+\label{sec:ch7:testing:twosample}
 As explained in Remark \ref{box:ch7:testing:twosample_coin}, when you have two samples of data, a key question you may have as a scientist is determining whether the nuances you observe in the sample are down to random chance, or whether the difference is substantial enough that the two samples might actually have fundamental differences. This is known as a \textit{two-sample test}.
 
 \begin{floatingbox}[h]\caption{The problem of reading too much into estimates}
@@ -146,7 +146,7 @@ Like above with coin flips, the way that we approach hypothesis testing for dete
 \begin{lstlisting}[style=python]
 # compute an upper-triangular mask to only look at the
 # upper triangle since the network is simple (undirected and loopless)
-upper_tri_non_diag_idx = np.triu(np.ones(A.shape), k=1).astype(bool)
+upper_tri_mask = np.triu(np.ones(A.shape), k=1).astype(bool)
 column_clust1 = [A[(D == 1) & upper_tri_mask].sum(), 
                  (A[(D == 1) & upper_tri_mask] == 0).sum()]
 column_clust2 = [A[(D == 2) & upper_tri_mask].sum(), 

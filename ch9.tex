@@ -1,13 +1,9 @@
 \chapter{Applications when you have multiple networks}
 \label{sec:ch9}
 
-In this final section, we'll cover some applications of network machine learning when we have numerous networks. We'll cover the following applications:
+In this final section, we'll cover some applications of network machine learning when we have numerous networks. This section will broadly focus on ways that we can leverage the power of statistical network learning, in settings that extend beyond those that we discussed so far in Chapters \ref{sec:ch7} and \ref{sec:ch8}. 
 
-\begin{enumerate}
-    \item Section \ref{sec:ch9:anomaly} shows how to use network learning strategies with networks that are varying in time.
-    \item Section \ref{sec:ch9:ssn_incoherent} shows how to identify edges that differ amongst a set of networks from different groups when the networks have common nodes, and how to incorporate this information to classify networks across the different groups.
-    \item Section \ref{sec:ch9:ssn_coherent} shows how to use network architecture to augment the strategies of the previous section to identify more topologically coherent groups of edges that can be used to classify networks.
-\end{enumerate}
+It is important to realize that many of the strategies that you have learned so far, such as Community Detection in Section \ref{sec:ch7:comm_detect}, can easily be extended for multiple network models by simply looking at embeddings or properties of the shared latent position matrix from the \texttt{MASE} embedding introduced in Section \ref{sec:ch6:multinet}. Likewise, we could efficiently study properties of the score matrices to understand the nuances of individual networks in a given collection of networks. Further, many techniques that we will study more in depth in Chapter \ref{sec:ch10}, such as graph neural networks, tend to focus on better understanding multiple network problems. Collectively, understanding how to study multiple networks represents one of the many extremely active areas of research for network learning, and the techniques in this section represent a small subset of the many problems that you can address.
 
 \input{applications/ch9/anomaly}
 \input{applications/ch9/ssn_incoherent}

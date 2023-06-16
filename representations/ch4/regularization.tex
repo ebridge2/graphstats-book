@@ -6,10 +6,10 @@ In practice, many networks you will encounter in network machine learning will \
 \textit{Regularization} is the process by which you either:
 \begin{enumerate}
     \item Modify data for the purpose of mitigating overfitting due to idiosyncrasies of the observed data, and/or
-    \item Modify the function you are estimating due to the fragility of the function you estimating to idiosyncracies of the observed data.
+    \item Modify the function you are estimating due to its fragility to the idiosyncracies of the observed data.
 \end{enumerate}
 
-In network machine learning, the first step of your analysis is to typically modify the network (or networks) themselves to allow better generalization of your statistical inference to new datasets. Later chapters, such as Section \ref{ch6} and many areas of the Applications, will cover approaches in which you modify the function you are estimating.
+In network machine learning, the first step of your analysis is to typically modify the network (or networks) themselves to allow better generalization of your statistical inference to new datasets. Later chapters, such as Section \ref{sec:ch6} and many areas of the Applications, will cover approaches in which you modify the function you are estimating.
 
 For each of the following subsections, we'll pose an example, a simulation, and code for how to implement the desired regularization approach. It is important to realize that you might use several of these techniques simultaneously in practice, or you might have a reason to use these techniques that go outside of our working examples.
 
@@ -62,6 +62,8 @@ The $17$ nodes in the network are local businesses, and an edge exists between a
 To begin, we're going to start looking at the business network. Let's take a look at what this network looks like in Figure \ref{fig:ch4:businessex}.
 
 \begin{lstlisting}[style=python]
+from graphbook_code import heatmap
+from matplotlib import pyplot as plt
 from graspologic.simulations import er_np
 import networkx as nx
 
@@ -87,14 +89,15 @@ A_bus = np.column_stack([np.row_stack([A_bus, np.zeros((n_iso, n))]),
 A_bus = A_bus - np.diag(np.diag(A_bus))
 n = n + n_iso
 
-
 # as a heatmap
-node_names = [i for i in range(1, n+1)]
+node_names = [i for i in range(0, n)]
 heatmap(A_bus.astype(int), title="Business Network Adjacency Matrix", 
-               xticklabels=node_names, yticklabels=node_names);
+               xticklabels=node_names, yticklabels=node_names)
 # as a layout plot
 G_bus = nx.from_numpy_matrix(A_bus)
 node_pos = nx.shell_layout(G_bus)
+
+plt.figure()
 nx.draw(G_bus, pos=node_pos)
 \end{lstlisting}
 
@@ -199,16 +202,15 @@ def prune_high_degree(A, return_inds=True, threshold=0):
         robj = (robj, np.where(non_prunes)[0])
     return robj
 
-
 # pruning nodes 
 A_bus_pruned, highpruned_nodes = prune_high_degree(A_bus_lowpruned, threshold=A_bus_lowpruned.shape[0] - 1)
 
 # get the nodes that aren't pruned by low pruning nor pizza hut node pruning
-node_names_lowpruned = [node_names_lowpruned[i] for i in highpruned_nodes]
-node_pos_lowpruned = {i : node_pos_lowpruned[j] for i, j in enumerate(highpruned_nodes)}
+node_names_pruned = [node_names_lowpruned[i] for i in highpruned_nodes]
+node_pos_pruned = {i : node_pos_lowpruned[j] for i, j in enumerate(highpruned_nodes)}
 
 G_bus_retained = nx.from_numpy_matrix(A_bus_pruned)
-nx.draw(G_bus_retained, pos=node_pos_retained)
+nx.draw(G_bus_retained, pos=node_pos_pruned)
 \end{lstlisting}
 The result of both low-degree pruning (for isolates and pendants) and high-degree pruning (for pizza hut nodes) is shown in Figure \ref{fig:ch4:nodeprune}(B). 
 
@@ -290,7 +292,7 @@ When you have an undirected network, it is often the case that the network will 
 \end{floatingbox}
 
 
-So what does this mean in terms of the network itself? This means that the network originally had edge weights $a_{ij}$, where $a_{ij}$ might not be equal to $a_{ji}$. Let's consider this in terms of the activity/hobby network. The activity/hobby network, which is undirected, perhaps has been stored in a representation where the entire lower-left triangle is just zeros, for space purposes. When you then upper-right symmetrize it, the network looks like this, using the\texttt{graspologic} function\texttt{symmetrize} with\texttt{method="triu"} (upper triangular symmetrization):
+So what does this mean in terms of the network itself? This means that the network originally had edge weights $a_{ij}$, where $a_{ij}$ might not be equal to $a_{ji}$. Let's consider this in terms of the activity/hobby network. The activity/hobby network, which is undirected, perhaps has been stored in a representation where the entire lower-left triangle is just zeros, for space purposes. When you then upper-right symmetrize it, the network looks like this, using the \texttt{graspologic} function \texttt{symmetrize} with \texttt{method="triu"} (upper triangular symmetrization):
 
 
 \begin{lstlisting}[style=python]
@@ -351,7 +353,7 @@ We'll will use the friendship network symmetrized by averaging (\texttt{A\_frien
 \subsubsection{Diagonal augmentation}
 \label{sec:ch4:regularization:diag_aug}
 
-In your future works with network machine learning, you will come across numerous techniques which operate on adjacency matrices which are \emph{positive semi-definite}. This word doesn't need to mean a whole lot to you conceptually, but it has a big implication when you try to use algorithms on many of your networks. Remember that when you have a loopless network, a common practice in network science is to set the diagonal to zero. What this does is it leads to your adjacency matrices being \emph{indefinite} (which means, \emph{not} positive semi-definite). For our purposes, this means that many network machine learning techniques simply cannot operate on these adjacency matrices. However, as we mentioned before, these entries are not actually zero, but simply \emph{do not exist} and you just didn't have a better way to represent them. Or do we?
+In your future works with network machine learning, you will come across numerous techniques which operate on adjacency matrices which are \emph{positive semi-definite}. This word doesn't need to mean a whole lot to you conceptually, but it has a big implication when you try to use algorithms on many of your networks. Remember that when you have a loopless network, a common practice in network science is to set the diagonal to zero. What this does is it leads to your adjacency matrices being \emph{indefinite} (which means, \emph{not} positive semi-definite). For our purposes, this means that many network machine learning techniques simply cannot operate on these adjacency matrices. However, as we mentioned before, these entries are not actually zero, but simply \emph{do not exist} and you just didn't have a better way to represent them. Or do you?
 
 \emph{Diagonal augmentation} is a procedure for imputing the diagonals of adjacency matrices for loopless networks. This gives us "placeholder" values that do not cause this issue of indefiniteness, and allow your network machine learning techniques to still work. Remember that for a simple network, the adjacency matrix will look like this:
 \begin{align*}
@@ -372,7 +374,7 @@ What you do is impute the diagonal entries using the \emph{fraction of possible 
         a_{n1} &...& a_{n, n-1} & \frac{d_n}{n-1}
     \end{bmatrix}
 \end{align*}
-When the matrices are directed or weighted, the computation is a little different, but fortunately\texttt{graspologic} will handle this for us. Let's see how you would apply this to the directed friendship network:
+When the matrices are directed or weighted, the computation is a little different, but fortunately \texttt{graspologic} will handle this for us. Let's see how you would apply this to the directed friendship network:
 \begin{lstlisting}[style=python]
 from graspologic.utils import augment_diagonal
 

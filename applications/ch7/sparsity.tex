@@ -1,20 +1,20 @@
 \section{Sparsity}
 \label{sec:ch7:sparse}
 
-In Section \ref{sec:ch4:prop-net:density}, you learned about a very important descriptive property of networks called the network density. An understanding of the network density gives us the ability to describe another extremely ubiquitous property of networks: the network sparsity. 
+In Section \ref{sec:ch4:prop-net:density}, we learned about a very important descriptive property of networks called the network density. Understanding network density gives us the ability to describe another extremely ubiquitous property of networks: the network sparsity. 
 
 
-To understand this section, we're going to use the working example in Remark \ref{box:ch7:sparse}:
+To understand this section, we're going to use the working example in Case Study \ref{box:ch7:sparse}:
 
-\begin{floatingbox}[h]\caption{Sparse network example}
+\begin{floatingbox}[h]\caption{Case Study: network of academic scholars}
 \label{box:ch7:sparse}
 The nodes of the network will represent academic scholars in computer science from $K$ universities. For every university, there are $100$ scholars investigated for an arbitrary sample of researchers in the community. An edge exists if a pair of researchers have co-authored a paper together. Therefore, researchers who work with more people will have more edges, and consequently, a higher node degree.
 
 Most researchers publish a lot of papers with their working groups; the within-university probability will be $1$, but the between-university probability will be $0.01$ (the network is extremely homophilic).
 
-$95\%$ of the researchers will prot\'eg\'es; they are not yet running a lab, so most of their work occurs with close collaborators at their university. These researchers have a degree-correction factor that is $Beta(1, 4)$ distributed; this just means that their degree-correction factors will be between $0$ and $1$, but will tend to be quite low (on average, $\frac{1}{1 + 4} = \frac{1}{5}$). 
+$95\%$ of the researchers are prot\'eg\'es; they are not yet running a lab, so most of their work occurs with close collaborators at their university. These researchers have a degree-correction factor that is $Beta(1, 4)$ distributed; this just means that their degree-correction factors will be between $0$ and $1$, but will tend to be quite low (on average, $\frac{1}{1 + 4} = \frac{1}{5}$). 
 
-On the other hand, $5\%$ of the researchers will be lab leaders; they tend to spend a lot of time working with researchers both within and outside of their university. These researchers will have a degree-correction factors that is $Beta(2, 1)$ distributed; again this means the degree-correction factors will be between $0$ and $1$, but will tend to be quite high (on average, $\frac{2}{1 + 2} = \frac{2}{3}$).
+On the other hand, $5\%$ of the researchers are lab leaders; they tend to spend a lot of time working with researchers both within and outside of their university. These researchers will have a degree-correction factors that is $Beta(2, 1)$ distributed; again this means the degree-correction factors will be between $0$ and $1$, but will tend to be quite high (on average, $\frac{2}{1 + 2} = \frac{2}{3}$).
 \end{floatingbox}
 
 
@@ -25,7 +25,7 @@ import numpy as np
 from graspologic.simulations import sample_edges
 from graphbook_code import generate_sbm_pmtx
     
-def academic_pmtx(K):
+def academic_pmtx(K, return_zs=False):
     """
     Produce probability matrix for academic example.
     """
@@ -49,6 +49,8 @@ def academic_pmtx(K):
     Theta = np.diag(thetas)
     # adjust probability matrix for SBM by degree-corrections
     P = Theta @ Pp @ Theta.transpose()
+    if return_zs:
+        return P, zs
     return P
 
 def academic_example(K):
@@ -56,10 +58,10 @@ def academic_example(K):
     return sample_edges(P)
 \end{lstlisting}
 
-First, we will introduce a few concepts about sparsity, and then we’ll tie in how this comes into play with learning from your network data. As a quick forenote, this section is going to assume that you have a working knowledge of the concept of a sequence, and that you have conceptualized algorithmic complexity and asymptotic notation at some point in your work life. If you need a quick refresher on asymptotic notation, we'd recommend that you give the wikipedia page a read-over \cite{bigonotation}. We summarized the big concepts that we will touch on in Remark \ref{box:ch7:asy}. Finally, we will see how the typical modes that network data are stored and analyzed can benefit if we know ahead of time that the network is sparse.
+First, we will introduce a few concepts about sparsity, and then we’ll tie in how this comes into play with learning from your network data. As a quick forenote, this section is going to assume that you have a working knowledge of the concept of a sequence, and that you have conceptualized algorithmic complexity and asymptotic notation. If you need a quick refresher on asymptotic notation, we'd recommend that you give the wikipedia page a read-over \cite{bigonotation}. We summarized the big concepts that we will touch on in Remark \ref{box:ch7:asy}. Finally, we will see how the typical modes in which network data are stored and analyzed can benefit if we know ahead of time that the network is sparse.
 
 
-\begin{floatingbox}[h]\caption{Asymptotic notation}
+\begin{floatingbox}[h]\caption{Concept: Asymptotic notation}
 \label{box:ch7:asy}
 Asymptotic notation is a description of what happens at the limits of the domains of functions. Suppose that $f(x)$ and $g(x)$ are two functions, that are defined for real values $x$. Common asymptotic notations include:
 \begin{enumerate}
@@ -88,14 +90,14 @@ A sequence of networks is \textit{sparse} if:
 \begin{align*}
     \mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right] = \smallO\left(\binom n 2\right).\numberthis \label{eqn:ch7:density:def1}
 \end{align*}
-For a network $\mathbf A^{(n)}$ with $n$ nodes, $\mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right]$ can be thought of as the expected number of edges in the network, and $\binom n 2$ is the (constant) number of potential edges in the network. With the characterization of asymptotic notation in Remark \ref{box:ch7:asy} in mind, what this means is that, ``the expected number of edges in the networks grows much slower than the number of potential edges''.
+For a network $\mathbf A^{(n)}$ with $n$ nodes, $\mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right]$ can be thought of as the expected number of edges in the network, and $\binom n 2$ is the (constant) number of potential edges in the network. With the characterization of asymptotic notation in Remark \ref{box:ch7:asy} in mind, this means that, ``the expected number of edges in the networks grows much slower than the number of potential edges''.
 
-Note that by the definition of asymptotic notation $\smallO(\cdot)$, what this means is that for any value $\epsilon > 0$, we can find an $n_\epsilon$ where for all $n \geq n_\epsilon$:
+Note that by the definition of asymptotic notation $\smallO(\cdot)$,  this means that for any value $\epsilon > 0$, we can find an $n_\epsilon$ where for all $n \geq n_\epsilon$:
 \begin{align*}
     \mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right] &\leq \epsilon \binom{n}{2}. \numberthis\label{eqn:ch7:density:def1_condition}
 \end{align*}
 
-Let's see how this looks for our random networks described in Remark \ref{box:ch7:sparse}. Note that the probability matrix has some element of randomness to it (the degree-correction factors), so you won't get exactly the same results every time, but it should give you a good idea of what to expect. We'll run the simulation and average over $30$ repetitions per setting to account for this added source of randomness:
+Let's see how this looks for our random networks described in Case Study \ref{box:ch7:sparse}. Note that the probability matrix has some element of randomness to it (the degree-correction factors), so you won't get exactly the same results every time, but it should give you a good idea of what to expect. We'll run the simulation and average over $30$ repetitions per setting to account for this added source of randomness:
 \begin{lstlisting}[style=python]
 import pandas as pd
 
@@ -180,7 +182,7 @@ In total, we have three identical characterizations of \textit{sparse networks}:
 \end{enumerate}
 Note that all of these three definitions mean the exact same thing and are equivalent.
 
-\begin{floatingbox}[h]\caption{Ultrasparse networks}
+\begin{floatingbox}[h]\caption{Concept: Ultrasparse networks}
 A further class of sparse networks, the \textit{ultrasparse} networks, is a collection of networks where $\mathbb E[\mathbf d^{(n)}]= \mathcal O(1)$. What this means is that ``the expected average degree is constant'', so the nodes in the network will have an average degree that does not grow as more nodes are added to the network. 
 
 Note that the networks that we generate above do not appear to be ultrasparse, because the expected average node degree is growing (albeit, slower than the number of nodes is increasing). To determine whether it is leveling off to a constant, or just leveling off (but still growing to infinity as $n \rightarrow \infty$) would take a background in real analysis.
@@ -195,11 +197,15 @@ We further subset these to say that a matrix is \textit{sufficiently sparse} if 
 Let's take a look at some applications of matrix sparsity. Our working example will be a sample of our academic networks above, with $K = 10$ communities and $n=1000$ nodes:
 
 \begin{lstlisting}[style=python]
-A, zs, P = academic_example(10)
+
+K = 10
+P, zs = academic_pmtx(K, return_zs=True)
+A = sample_edges(P)
+n = A.shape[0]
 
 print("# Non-zero entries: {:d}".format(np.triu(A).sum().astype(int)))
 # Non-zero entries: 3163
-print("# Number of entries: {:d}".format(np.triu(np.ones((n, n))).sum().astype(int)))
+print("# Number of entries: {:d}".format(np.triu(np.ones_like(A)).sum().astype(int)))
 # Number of entries: 20483200
 \end{lstlisting}
 
@@ -283,7 +289,7 @@ A_new = symmetrize(Btriu.todense(), method="triu")
 np.alltrue(A_new == A)
 # True
 \end{lstlisting}
-If you have sufficiently sparse adjacency matrices, you can exploit this structure just like we have here to get vastly improved spatial performance storing your networks. Since really sizable networks tend to be sufficiently sparse, the most common storage format you will find with simple networks is something similar to this \texttt{COOrdinate} format, called an edge list, which is a \texttt{csv} (comma-separated values), \texttt{ssv} (space-separated values), or \texttt{tsv} (tab-separated values) file, like is shown in Table \ref{tab:adjlist} for the simple example in Equation \eqref{eqn:ch7:sparsity:adjex}. With \texttt{csv} or \texttt{ssv} formats, instead of having tabs separate the node indexing columns of the edge list, you could also have spaces or commas (or any suitable delimiter). 
+If we have sufficiently sparse adjacency matrices, we can exploit this structure just like we have here to get vastly improved spatial performance storing your networks. Since really sizable networks tend to be sufficiently sparse, the most common storage format we will find with simple networks is something similar to this \texttt{COOrdinate} format, called an edge list, which is a \texttt{csv} (comma-separated values), \texttt{ssv} (space-separated values), or \texttt{tsv} (tab-separated values) file, like is shown in Table \ref{tab:adjlist} for the simple example in Equation \eqref{eqn:ch7:sparsity:adjex}. With \texttt{csv} or \texttt{ssv} formats, instead of having tabs separate the node indexing columns of the edge list, we could also have spaces or commas (or any suitable delimiter). 
 
 \begin{table}[h]
     \centering
@@ -298,13 +304,13 @@ If you have sufficiently sparse adjacency matrices, you can exploit this structu
     \label{tab:adjlist}
 \end{table}
 
-Depending on the classification of the network that you are working with, the appropriate format for storage might differ. When networks are simple, the strategy described above (an edgelist, where each line indicates the node indices of non-zero entries in the upper triangle of the adjacency matrix) tends to be a format you will commonly come across. When the network is weighted, there is often a third column corresponding to the edge-weight, which is redundant in unweighted networks (and therefore often omitted entirely). When the network is directed, the lower triangle entries are also typically stored. When the network is undirected but includes loops, the edgelist will typically include the all nodes in the upper triangle, in addition to the diagonal. 
+Depending on the classification of the network that we are working with, the appropriate format for storage might differ. When networks are simple, the strategy described above (an edgelist, where each line indicates the node indices of non-zero entries in the upper triangle of the adjacency matrix) tends to be a format we will commonly come across. When the network is weighted, there is often a third column corresponding to the edge-weight, which is redundant in unweighted networks (and therefore often omitted entirely). When the network is directed, the lower triangle entries are also typically stored. When the network is undirected but includes loops, the edgelist will typically include the all nodes in the upper triangle, in addition to the diagonal. 
 
-With so many possible representations of networks in edgelist or sparse formats, it is imperative when you work with real networks that you first ascertain the underlying properties of the network that you are working with. Understanding the properties of the underlying network will indicate to you how to properly ``unpack'' an edgelist or sparse representation to recover an adjacency matrix.
+With so many possible representations of networks in edgelist or sparse formats, it is imperative when we work with real networks that we first ascertain the underlying properties of the network that we are working with. Understanding the properties of the underlying network will indicate to us how to properly ``unpack'' an edgelist or sparse representation to recover an adjacency matrix.
 
 \paragraph*{Algorithmic implications of matrix sparsity}
 
-When you represent the adjacency matrix using sparse formats, you can benefit a lot by leveraging algorithms designed for sparse data. Let's see, for instance, how long it takes for \texttt{scipy} to run a sparse \texttt{svd} when we pass the data in a dense format (a standard \texttt{numpy} array) and use a standard \texttt{svd}, compared to when we use a sparse format and use a partial \texttt{svd}, to embed into $20$ dimensions. A full \texttt{svd} for an $n \times n$ square matrix (remember that adjacency matrices are square) will compute all $n$ left and right singular vectors (along with their singular values). A partial \texttt{svd} will only compute the top (or bottom) subset of these:
+When we represent the adjacency matrix using sparse formats, we can benefit a lot by leveraging algorithms designed for sparse data. Let's see, for instance, how long it takes for \texttt{scipy} to run a sparse \texttt{svd} when we pass the data in a dense format (a standard \texttt{numpy} array) and use a standard \texttt{svd}, compared to when we use a sparse format and use a partial \texttt{svd}, to embed into $20$ dimensions. A full \texttt{svd} for an $n \times n$ square matrix (remember that adjacency matrices are square) will compute all $n$ left and right singular vectors (along with their singular values). A partial \texttt{svd} will only compute the top (or bottom) subset of these:
 
 \begin{lstlisting}[style=python]
 import time
@@ -314,7 +320,7 @@ timestart = time.time()
 U, S, Vh = sp.linalg.svd(A)
 Xhat = U[:, 0:20] @ np.diag(np.sqrt(S[0:20]))
 timeend = time.time()
-print("Naive approach: {:3f}".format(timeend - timestart))
+print("Naive approach: {:3f} seconds".format(timeend - timestart))
 # we get about .35 seconds
 
 # a sparse svd on the sparse matrix
@@ -323,17 +329,17 @@ timestart = time.time()
 U, S, Vh = sp.sparse.linalg.svds(Acoo, k=20)
 Xhat = U @ np.diag(np.sqrt(S))
 timeend = time.time()
-print("Sparse approach: {:3f}".format(timeend - timestart))
+print("Sparse approach: {:3f} seconds".format(timeend - timestart))
 # we get about .08 seconds
 \end{lstlisting}
 
 Which is about a factor of four improvement in speed. As matrices grow in size, and have a lower and lower fraction of their entries being non-zero, sparse approaches tend to dramatically outperform naive implementations. 
 
-At a certain point, when your data gets really large, you might not even be able to execute standard functions on standard arrays, and might be required to use sparse approaches.
+At a certain point, when your data gets really large, we might not even be able to execute standard functions on standard arrays, and might be required to use sparse approaches.
 
 \subsection{Practical applications of network sparsity and matrix sparsity}
 
-Matrix and network sparsity have a unique interplay when dealing with network data represented as an adjacency matrix. This case we will consider deals directly with a strategy that you have gotten quite accustomed to at this point in the book: spectral embeddings of network data. For this example, we will see a unique problem that the adjacency spectral embedding can run into with sparse networks that have sparse adjacency matrices.
+Matrix and network sparsity have a unique interplay when dealing with network data represented as an adjacency matrix. This case we will consider deals directly with a strategy that we have gotten quite accustomed to at this point in the book: spectral embeddings of network data. For this example, we will see a unique problem that the adjacency spectral embedding can run into with sparse networks that have sparse adjacency matrices.
 
 Let's consider our example from the above section with $K=10$ communities and $n=1000$ nodes. The underlying probability matrix and the adjacency matrix for the network are shown in Figure \ref{fig:ch7:density:deg}(A) and (B) respectively. We can see some fairly prominent modular structure, so from what we learned in Chapter \ref{ch6} and Section \ref{sec:ch7:comm_detect}, a reasonable approach to learn from the data might be a spectral embedding and a clustering to identify community assignments from the network. To determine whether \texttt{lse} or \texttt{ase} are appropriate for our data, we compute the node degrees like we did for Section \ref{sec:ch6:lse}:
 
@@ -383,7 +389,7 @@ pairplot(U, labels=zs, title="Eigenspokes in the Laplacian")
 
 These aren't quite ``EigenSpokes'', in that the points aren't perfectly axis-aligned, but they're still quite spokey in shape. Here, too, naive community detection approaches will struggle, even though some of the communities look less poorly separated. To convince yourself as to why community detection with \texttt{kmeans} might fail, we would encourage you to visualize the distance matrix between pairs of nodes, like you did in Section \ref{sec:ch6:lse}, armed with the intuition that you gained in Section \ref{sec:ch7:comm_detect} about \texttt{kmeans} for community detection.
 
-As it turns out, spectral approaches tend to struggle with networks that can be thought of as sparse (which, as we saw in Figure \ref{fig:ch7:density:sparsity}, it is). You can identify when you might run into these patterns by looking at how sparse the adjacency matrix is. You will typically run into sparse network troubles when the number of edges is ``on the order of'' the number of nodes in the network, and when it is far less than the number of potential edges in the network. You can calculate these with:
+As it turns out, spectral approaches tend to struggle with networks that can be thought of as sparse (which, as we saw in Figure \ref{fig:ch7:density:sparsity}, it is). We can identify when we might run into these patterns by looking at how sparse the adjacency matrix is. You will typically run into sparse network troubles when the number of edges is ``on the order of'' the number of nodes in the network, and when it is far less than the number of potential edges in the network. You can calculate these with:
 
 \begin{lstlisting}[style=python]
 print("# Expected edges: {:2f}".format(np.triu(P).sum()))
@@ -396,7 +402,7 @@ print("# Potential edges: {:d}".format(np.triu(np.ones((n, n))).sum().astype(int
 
 When you run into situations where the number of edges is orders of magnitude less than the number of potential edges, you should be on the lookout for potentially running into sparsity concerns and be aware that many naive spectral techniques (such as \texttt{ase}, \texttt{lse}, and derived approaches like \texttt{mase} and \texttt{omni}) will struggle to produce embeddings that will facilitate downstream analysis (like community detection) \cite{Lei2013Dec}. You may need to turn to alternative techniques such as \cite{Krzakala2013Dec,Chen2012} to achieve high performance in these settings, where you incorporate different functions of the adjacency matrix that are better behaved for sparse regimes all together or apply penalties to nodes with low degrees to, in some sense, force your embeddings to avoid these spoke-like patterns.
 
-\begin{floatingbox}[h]\caption{Simulating EigenSpokes is not an exact science}
+\begin{floatingbox}[h]\caption{Remark: Simulating EigenSpokes is not an exact science}
 EigenSpokes are a phenomena that arise in sparse networks, in that we have a good idea of what situations they can arise in (sparse networks) but not a great idea of how to reliably obtain them from random network samples. 
 
 In this sense, you may have to run your simulations a few times to produce perfect ``EigenSpoke''-like patterns that run perfectly parallel along eigenvectors. They shouldn't be too hard to come by; when running these examples listed here, I tended to get spokes about $50\%$ of the time (and nonsensical embeddings in the other cases). 
@@ -410,7 +416,7 @@ Remember in Section \ref{sec:ch6:ase:whyuse}, we justified the \texttt{ase} by a
 
 These conditions go a bit beyond the scope of this book, but the idea is that when the networks fail to satisfy these regimes, the naive \texttt{ase} loses its meaning. As the number of nodes increases, instead of the estimated latent position matrices getting closer and closer to the true latent position matrix of the underlying random network, the estimates become progressively more nonsensical. At some level, we lose the ability to say that $\hat X$ (the estimated latent position matrix) is a reasonable estimate of the true underlying latent position matrix $X$. This is why we observed ``puzzling'' behaviors in the spectral embeddings of our networks here (which were samples from a sparse sequence of random networks). 
 
-\begin{floatingbox}[h]\caption{Complementary definitions of sparsity}
+\begin{floatingbox}[h]\caption{Concept: Complementary definitions of sparsity}
 These two definitions of sparsity differ in that \textit{network sparsity} is a property of an underlying sequence of random networks, but \textit{matrix sparsity} is a property of the adjacency matrix (or a function thereof) for a network that you obtain. 
 
 A network with a sufficiently sparse adjacency matrix will often run into problems associated with sparse sequences of random networks, and samples from sparse sequences of networks with enough nodes will often have sufficiently sparse adjacency matrices to cause odd results in network learning algorithms, so these two definitions prove complementary in network science.

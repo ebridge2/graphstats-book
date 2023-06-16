@@ -23,13 +23,19 @@ which will fetch the docker container for the book from \cite{thisbookdocker}.
 
 This docker container contains all of the dependencies needed to run the code within this book, and will allow you to use the book in conjunction with \texttt{jupyter}. \texttt{jupyter} is a lightweight, web-based interactive computing platform that you can access through your web browser at \texttt{localhost:<port>}, where \texttt{<port>} is the port you provide to the container for execution. You can start the docker container like this:
 
+% \begin{lstlisting}[style=bash]
+% $ docker run -it --rm -p <port>:8888 neurodata/graph-stats-book \
+%     jupyter-lab --ip=0.0.0.0 --port=8888 /home/book/ \
+%     --NotebookApp.token="graphbook"
+% \end{lstlisting}
+
 \begin{lstlisting}[style=bash]
-$ docker run -it --rm -p <port>:8888 neurodata/graph-stats-book \
+docker run -it -v <path/to/local/working/directory>:/home/book -p 8888:8888 neurodata/graph-stats-book \
     jupyter-lab --ip=0.0.0.0 --port=8888 /home/book/ \
     --NotebookApp.token="graphbook"
 \end{lstlisting}
 
-Which will launch a \texttt{jupyter-lab} session, and {should} automatically log you into the session in your browser. If it does not, open up a browser of your choice, and go to \texttt{localhost:<port>}, where you will be prompted to enter the log-in password for your session. If you don't know what port to choose, it's probably easiest to try \texttt{8888}, and if that doesn't work, \texttt{8889}, and keep working up until you find an open port. The port is so that your browser can communicate with the jupyter session inside the docker container (which runs jupyter internally on port \texttt{8888}), and so you are basically telling your computer that your port \texttt{<port>} should "tie in" to port \texttt{8888} in the docker container. The password for the session is \texttt{graphbook}, or any password you choose to enter.
+Which will launch a \texttt{jupyter-lab} session, and {should} automatically log you into the session in your browser. If it does not, open up a browser of your choice, and go to \texttt{localhost:<port>}, where you will be prompted to enter the log-in password for your session- that login-in password is \texttt{graphbook}, generated from \texttt{--NotebookApp.token} in the command above. If you don't know what port to choose, it's probably easiest to try \texttt{8888}, and if that doesn't work, \texttt{8889}, and keep working up until you find an open port. The port is so that your browser can communicate with the jupyter session inside the docker container (which runs jupyter internally on port \texttt{8888}), and so you are basically telling your computer that your port \texttt{<port>} should "tie in" to port \texttt{8888} in the docker container.
 
 If you don't want to use the docker container, that's fine too: you can follow the instructions at the end in Section \ref{sec:ch2:get:install} for more details. 
 

@@ -3,7 +3,7 @@
 
 Throughout most of this book to date, when dealing with stochastic block models, we've assumed that we knew the community assignments ahead of time. As you learned in Section \ref{sec:ch5:psd_block:same_lp}, with networks that have an underlying block-like structure, the underlying latent positions were equal (up to a possible re-scaling by a degree-correction factor) for all nodes in the same commmunity.
 
-When we used \texttt{ase} or \texttt{lse} to embed positive semi-definite probability matrices (and more generally, any probability matrix) in Section \ref{sec:ch6:ase} and \ref{sec:ch6:lse}, we could obtain reasonable estimates of the underlying latent position matrices (up to a rotation). We asserted, without much to back it up, that this ``latent representation'' of the adjacency matrix as a tabular structure would allow us to learn latent patterns in our network that might not necessarily be obvious at first glance, and therefore greatly simplified the conceptually complicated dependency structures that existed in our adjacency matrix. 
+When we used \texttt{ase} or \texttt{lse} to embed positive semi-definite probability matrices (and more generally, any probability matrix) in Section \ref{sec:ch6:ase} and \ref{sec:ch6:lse}, we could obtain reasonable estimates of the underlying latent position matrices (up to a rotation). We asserted, without much to back it up, that this ``latent representation'' of the adjacency matrix as a tabular structure would allow us to learn latent patterns in our network that might not necessarily be obvious at first glance which, therefore, greatly simplified the conceptually complicated dependency structures that existed in our adjacency matrix. 
 
 Let's revisit a version of our working example from Section \ref{sec:ch6:lse}, which was a network sampled from a homophilic $DCSBM_n(\vec z, \vec\theta, B)$ random network, but which has three communities instead of two. We'll also reorganize the nodes of the matrix randomly like we did in Section \ref{sec:ch6:ase:reorder}, since in many networks that you obtain, you might not be spoon-fed nodes that are pre-ordered to reflect the community structure:
 
@@ -35,7 +35,7 @@ The network probability matrix is shown in \ref{fig:ch7:comm_detect:ex}(A), and 
     \caption[Community detection three community example]{\textbf{(A)} the probability matrix for the $DCSBM_n(\vec z, \vec \theta, B)$ random networks, and \textbf{(B)} a sample of the random network.}
     \label{fig:ch7:comm_detect:ex}
 \end{figure}
-We would encourage you to go through the procedure of making a histogram of the node degrees to observe that the network appears to be slightly heavy-tailed, which would encourage the use of \texttt{lse}. However, for the purposes of this section, we will proceed with \texttt{ase}, as we will adjust for the elliptical-shaped latent positions using a different strategy later on. 
+We encourage you to go through the procedure of making a histogram of the node degrees to observe that the network appears to be slightly heavy-tailed, which would encourage the use of \texttt{lse}. However, for the purposes of this section, we will proceed with \texttt{ase}, as we will adjust for the elliptical-shaped latent positions using a different strategy later on. 
 
 \begin{floatingbox}[h]\caption{Refamiliarize yourself with unsupervised learning}
 In this next section, we will assume that you are familiar with several concepts from unsupervised learning, including the $k$-means algorithm, the Adjusted Rand Index (ARI), confusion matrices, and the silhouette score. If you aren't already familiar or want a quick refresher, check out the unsupervised learning basics section of the appendix in Appendix \ref{app:ch14:unsup}, which covers the required background knowledge for these concepts.
@@ -46,7 +46,7 @@ Briefly, we will use $k$-means to estimate the latent community assignment vecto
 \subsection{Spectral clustering with a pre-defined number of communities}
 \label{sec:ch7:comm_detect:known}
 
-When you embed a network with a defined number of communities, remember to use the number of embedding dimensions equal to the number of communities, because the true latent position matrix has one latent dimension for each community as you learned in Section \ref{sec:ch5:psd_block:same_lp}. In this case, since $K=3$, we embed with $3$ embedding dimensions:
+When you embed a network with a defined number of communities, remember to equate the number of embedding dimensions with the number of communities, because the true latent position matrix has one latent dimension for each community as you learned in Section \ref{sec:ch5:psd_block:same_lp}. In this case, since $K=3$, we embed with $3$ embedding dimensions:
 
 \begin{lstlisting}[style=python]
 import scipy as sp
@@ -55,7 +55,7 @@ from graspologic.embed import AdjacencySpectralEmbed as ase
 Xhat = ase(n_components=3).fit_transform(Aperm)
 D = sp.spatial.distance_matrix(Xhat, Xhat)
 \end{lstlisting}
-We plot the second and third embedding dimensions as a scatter plot in Figure \ref{fig:ch7:comm_detect:embed}(A), but we would encourage you to look at the entire pairs plot. Note that even though the nodes in \texttt{Aperm} were completely randomized, the estimated latent positions still retain a ``blob'' structure, where groups of nodes in the same community look spatially quite close to one another. This is reflect in the distance matrix in Figure \ref{fig:ch7:comm_detect:embed}(B), where we can see that the pairwise distances (within-community) tend to be less than the pairwise distances (between-community).
+We plot the second and third embedding dimensions as a scatter plot in Figure \ref{fig:ch7:comm_detect:embed}(A), but we would encourage you to look at the entire pairs plot. Note that even though the nodes in \texttt{Aperm} were completely randomized, the estimated latent positions still retain a ``blob'' structure, where groups of nodes in the same community look spatially quite close to one another. This is reflected in the distance matrix in Figure \ref{fig:ch7:comm_detect:embed}(B), where we can see that the within-community pairwise distances tend to be less than the between-community pairwise distances.
 
 
 \begin{figure}[h]
@@ -67,7 +67,7 @@ We plot the second and third embedding dimensions as a scatter plot in Figure \r
 
 \subsubsection{Estimating community assignments via \texttt{KMeans}}
 
-First, we use \texttt{KMeans} to estimate the latent community assignment vector, which we will denote with $\hat{\vec z}$. Remember that $\hat\cdot$ just means an estimate; in this case, an estimate of the community assignment vector $\vec z$ for an underlying $DCSBM_n(\vec z, \vec \theta, B)$ random network. We can produce the estimate of the community assignment vector using \texttt{KMeans()} from \texttt{sklearn}:
+First, we use \texttt{KMeans} to estimate the latent community assignment vector, which we will denote with $\hat{\vec z}$. Remember that $\hat\cdot$ just means an estimate: in this case, an estimate of the community assignment vector $\vec z$ for an underlying $DCSBM_n(\vec z, \vec \theta, B)$ random network. We can produce the estimate of the community assignment vector using \texttt{KMeans()} from \texttt{sklearn}:
 
 \begin{lstlisting}[style=python]
 from sklearn.cluster import KMeans
@@ -80,7 +80,7 @@ One slight problem with this procedure is that, by being fully unsupervised, the
 \paragraph{Evaluating your clustering}
 \label{ch7:comm_detect:eval}
 
-In this instance, you have your true community labels already known, because this is just a simulation. When you know true node labels ahead of time, you can do some special evaluations that take advantage of the fact that you have the true labels. The first of these is to study the confusion matrix, which you can produce with \texttt{sklearn}'s \texttt{confusion\_matrix()}:
+In this instance, true-community labels are already known, because this is just a simulation. When you know true node labels ahead of time, you can do some special evaluations that take advantage of the fact that you have the true labels. The first of these is to study the confusion matrix, which you can produce with \texttt{sklearn}'s \texttt{confusion\_matrix()}:
 
 \begin{lstlisting}[style=python]
 from sklearn.metrics import confusion_matrix
@@ -90,7 +90,7 @@ from sklearn.metrics import confusion_matrix
 cf_matrix = confusion_matrix(zperm, labels_kmeans)
 \end{lstlisting}
 
-The confusion matrix is shown in Figure \ref{fig:ch7:comm_detect:eval}(A). When you have a good clustering that aligns well with your true labels, you will see that the predictions will tend to be homogeneous: a particular true label will correspond to a particular predicted label, and vice-versa. You can evaluate this homogeneity (how well, in general, one true label corresponds to one predicted label, and vice-versa) using the Adjusted Rand Index (ARI), where a score of closer to $1$ indicates that the true and predicted labels are perfectly homogeneous (one true label corresponds to exactly one predicted label):
+The confusion matrix is shown in Figure \ref{fig:ch7:comm_detect:eval}(A). You will see that when you have a clustering that aligns well with your true labels, the predictions will tend to be homogeneous: a particular true label will correspond to a particular predicted label, and vice-versa. You can evaluate this homogeneity (how well, in general, one true label corresponds to one predicted label, and vice-versa) using the Adjusted Rand Index (ARI), where a score of closer to $1$ indicates that the true and predicted labels are perfectly homogeneous (one true label corresponds to exactly one predicted label):
 
 \begin{figure}[h]
     \centering
@@ -111,15 +111,15 @@ This score of about $0.5$ indicates that the predicted communities tend to be re
 
 \paragraph*{By remapping the labels, we can evaluate the error rate}
 
-Looking back at the confusion matrix in Figure \ref{fig:ch7:comm_detect:eval}, it looks like we have a pretty reasonable pattern we can establish:
+Looking back at the confusion matrix in Figure \ref{fig:ch7:comm_detect:eval}, it looks like we have a reasonable pattern we can establish:
 \begin{enumerate}
     \item Nodes that are assigned a predicted label of $0$ tend to correspond to community $1$, 
     \item Nodes that are assigned a predicted label of $1$ tend to correspond to community $3$, and
     \item Nodes that are assigned a predicted label of $2$ tend to correspond to community $2$.
 \end{enumerate}
-It seems pretty clear that this would make for a reasonable \textit{correspondence} between the predicted and true labels. A \textit{correspondence} between two sets (in this case, the predicted and true labels for node communities) refers to the fact that we can define a mapping that relates the elements of the predicted labels to the true labels. 
+It seems clear that this would make for a reasonable \textit{correspondence} between the predicted and true labels. A \textit{correspondence} between two sets (in this case, the predicted and true labels for node communities) refers to the fact that we can define a mapping that relates the elements of the predicted labels to the true labels. 
 
-When the results are not as homogeneous as they are here, this can be quite finnicky, so we will avoid going into too much depth in this book. We can remap the labels with \texttt{graspologic}'s \texttt{remap\_labels()} utility:
+Results that are not as homogeneous as they are here can be quite finnicky, so we will avoid going into too much depth in this book. We can remap the labels with \texttt{graspologic}'s \texttt{remap\_labels()} utility:
 
 \begin{lstlisting}[style=python]
 from graspologic.utils import remap_labels
@@ -136,7 +136,7 @@ error = error != 0
 er_rt = np.mean(error)  # error rate is the frequency of making an error
 \end{lstlisting}
 
-In Figure \ref{fig:ch7:comm_detect:eval}(B), we visualize the misclassified points as a function of the data matrix that is being leveraged to estimate community assignments, the estimated latent position matrix. Notice that we do a good job of classifying points in the ``arms'' of the individual blobs of nodes (the \textit{clusters}), and tends to do worse for the points that are located between the clusters of nodes. This is a function of the manner in which predicted community labels are applied by \texttt{KMeans}. See Remark \ref{box:ch7:kmeans_for_sc} and Appendix \ref{app:ch14:unsup} for more detailed commentary on why this is the case.
+In Figure \ref{fig:ch7:comm_detect:eval}(B), we visualize the misclassified points as a function of the data matrix that is being leveraged to estimate community assignments, the estimated latent position matrix. Notice that we do a good job of classifying points in the ``arms'' of the individual blobs of nodes (the \textit{clusters}), but tend to do worse for the points that are located between the clusters of nodes. This happens because of the manner in which predicted community labels are applied by \texttt{KMeans}. See Remark \ref{box:ch7:kmeans_for_sc} and Appendix \ref{app:ch14:unsup} for more detailed commentary about why this happens.
 
 \begin{floatingbox}[h]\caption{Why does \texttt{KMeans} perform well for clustering samples of block models?}
 \label{box:ch7:kmeans_for_sc}
@@ -162,13 +162,13 @@ Use the objective function for \texttt{GMM} to argue that this result supports t
 \subsection{Spectral clustering with an undefined number of communities}
 \label{sec:ch7:comm_detect:unknown}
 
-In real data, you almost never have a beautiful canonical modular structure that makes choosing a number of communities obvious. Further, by applying unsupervised clustering algorithms in the first place and attempting to learn community labels from your data, it's likely the case that you might not necessarily know reasonable community labels that you would expect to obtain going in. This means that it is extremely infrequently going to be the case that you know exactly how you should set the number of communities, $K$, or the number of embedding dimensions ahead of time.
+In real data, you almost never have a beautiful canonical modular structure that makes choosing a number of communities obvious. Further, by applying unsupervised clustering algorithms in the first place and attempting to learn community labels from your data, it's likely that you wouldn't know reasonable community labels that you would expect to obtain going in. This means that it is extremely infrequently going to be the case that you know exactly how you should set the number of communities, $K$, or the number of embedding dimensions ahead of time.
 
 \begin{floatingbox}[h]\caption{Nomenclature about clusters and communities}
-With unsupervised classification, the typical nomenclature is that groups of points that are assigned to the same group by the trained classifier are called a ``cluster''. However, in our case, they are more than just clusters: they are predicted node community labels. For this reason, when we are referring specifically to the assignments themselves, we will often refer to this concept as ``predicted communities'' or something of the like. When we are referring to ``blobs of points'', we will often default to calling them clusters of points. 
+With unsupervised classification, groups of points that are assigned to the same group by the trained classifier are typically called a ``cluster''. However, in our case, they are more than just clusters: they are predicted node community labels. For this reason, when we are referring specifically to the assignments themselves, we will often refer to this concept as ``predicted communities'' or something of the like. When we are referring to ``blobs of points'', we will often default to calling them clusters of points. 
 \end{floatingbox}
 
-The procedure for estimating the community assignment vector is similar to what we did previously in Section \ref{sec:ch7:comm_detect}. We again embed, but this time since we don't know the number of communities we are looking for, we will use automatic elbow selection from Section \ref{sec:ch6:dimest:dimselect}:
+The procedure for estimating the community assignment vector is similar to the one we used previously in Section \ref{sec:ch7:comm_detect}. We again embed, but this time because we don't know the number of communities we are looking for, we will use automatic elbow selection from Section \ref{sec:ch6:dimest:dimselect}:
 
 \begin{lstlisting}[style=python]
 Xhat = ase().fit_transform(Aperm)
@@ -181,7 +181,7 @@ Since we do not know the optimal number of communities $K$ nor the true communit
 
 \subsubsection{Using the silhouette score to deduce an appropriate number of communities}
 
-Using the silhouette score, deducing an appropriate number of communities is pretty easy. We choose a range of communities that we think might be appropriate for our network. Let's say, for instance, we think there might be as many as $10$ communities in our dataset. We perform a clustering using unsupervised learning for all possible numbers of communities, from $2$ all the way up to the maximum number of communities we think could be reasonable. Then, we compute the silhouette score for each number of communities. Finally, we choose the number of communities which has the highest Silhouette score. 
+Using the silhouette score, deducing an appropriate number of communities is pretty easy. We choose a range of communities that we think might be appropriate for our network. Let's say, for instance, we think there might be as many as $10$ communities in our dataset. We perform a clustering using unsupervised learning for all possible numbers of communities, from $2$ all the way up to the maximum number of communities we think could be reasonable. Then, we compute the silhouette score for each number of communities. Finally, we choose the number of communities that has the highest Silhouette score. 
 
 Let's see how to do this, using \texttt{graspologic}'s \texttt{KMeansCluster()} function:
 
@@ -189,7 +189,7 @@ Let's see how to do this, using \texttt{graspologic}'s \texttt{KMeansCluster()} 
 from graspologic.cluster import KMeansCluster
 
 km_clust = KMeansCluster(max_clusters = 10)
-km_clust = km_clust.fit(Xhat_permuted)
+km_clust = km_clust.fit(Xhat)
 \end{lstlisting}
 
 To determine an optimal number of clusters, we can visualize the silhouette score as a function of the number of clusters:
@@ -203,12 +203,12 @@ silhouette = km_clust.silhouette_ # obtain the respective silhouettes
 
 # place into pandas dataframe
 ss_df = df({"Number of Communities": nclusters, "Silhouette Score": silhouette})
-sns.lineplot(data=ss_df, ax=ax, x="Number of Communities", y="Silhouette Score")
+sns.lineplot(data=ss_df, x="Number of Communities", y="Silhouette Score")
 \end{lstlisting}
 
 In Figure \ref{fig:ch7:comm_detect:kmclust}(A), we look at the number of communities as a function of the silhouette score. Notice that \texttt{KMeans} with silhouette score analysis determines that the optimal number of communities is $\hat K = 4$. 
 
-Figure \ref{fig:ch7:comm_detect:kmclust}(B) shows the predicted communities for each node coloring the estimated latent dimensions. It appears as though \texttt{KMeans} has been ``fooled'' by the elliptical, non-spherical embeddings, and in fact determined optimal unsupervised classification performance could be achieved by adding a fourth community to the center of the estimated latent positions. This is due to the fact that \texttt{KMeans} and the silhouette score penalize all dimensions equally, which as you found in Remark \ref{box:ch7:gmm}, might not always be desirable. 
+Figure \ref{fig:ch7:comm_detect:kmclust}(B) shows the predicted communities for each node coloring the estimated latent dimensions. It appears that \texttt{KMeans} has been ``fooled'' by the elliptical, non-spherical embeddings, and in fact determined optimal unsupervised classification performance could be achieved by adding a fourth community to the center of the estimated latent positions. This is because \texttt{KMeans} and the silhouette score penalize all dimensions equally, which as you found in Remark \ref{box:ch7:gmm}, might not always be desirable. 
 
 \begin{figure}[h]
     \centering
@@ -220,19 +220,19 @@ Figure \ref{fig:ch7:comm_detect:kmclust}(B) shows the predicted communities for 
 
 \paragraph*{Determining what the predicted communities correspond to}
 
-We plot the confusion matrix as a function of the true node community in Figure \ref{fig:ch7:comm_detect:kmclust}(C). The ``arms'' of the ellipses in Figure \ref{fig:ch7:comm_detect:kmclust}(B) correspond to predicted labels of $1$ through $3$ respectively, and nearly perfectly correspond with the true underlying node communities $1$ through $3$ respectively in Figure \ref{fig:ch7:comm_detect:kmclust}(C). On the other hand, the $0$ community at the center of the arms does not correspond to any particular true label particularly well, and is an agglomeration of points at the bases of the arms across all three true communities. We visualize the points that are misclassified in Figure \ref{fig:ch7:comm_detect:kmclust}(D), which correspond to the points assigned to the $0$ community. 
+We plot the confusion matrix as a function of the true node community in Figure \ref{fig:ch7:comm_detect:kmclust}(C). The ``arms'' of the ellipses in Figure \ref{fig:ch7:comm_detect:kmclust}(B) correspond to predicted labels of $1$ through $3$ respectively, and nearly perfectly correspond with the true underlying node communities $1$ through $3$ respectively in Figure \ref{fig:ch7:comm_detect:kmclust}(C). On the other hand, the $0$ community at the center of the arms does not correspond to any specific true label particularly well, and is an agglomeration of points at the bases of the arms across all three true communities. We visualize the points that are misclassified in Figure \ref{fig:ch7:comm_detect:kmclust}(D), which correspond to the points assigned to the $0$ community. 
 
 \paragraph*{The art of determining what predicted communities mean}
 
-By now, you know how to apply spectral clustering to network data and evaluate it when you have a single node covariate (in this case, the true node communities). However, real data is not nearly this cut and dry: typically, associated with each node, you may have many covariates, some of which might not even have discrete (one of $K$) labels. For instance, in Figure \ref{fig:ch2:brain_preds}, for each node we had a spatial position, which would not be very easy to interpret our communities on the basis of.
+By now, you know how to apply spectral clustering to network data and evaluate it when you have a single node covariate (in this case, the true node communities). However, real data are not nearly this cut and dry: typically, associated with each node, you may have many covariates, some of which might not even have discrete (one of $K$) labels. For instance, in Figure \ref{fig:ch2:brain_preds}, for each node we had a spatial position, which would not be very easy to interpret our communities on the basis of.
 
 For this reason, there is quite an art to determining what predicted communities mean, much like many other applications of unsupervised learning in machine learning more generally. You may have to take features that describe your nodes, such as the spatial positions listed above, and take functions of these spatial positions (such as determining the lobe of the brain that the spatial position falls into, which we described as a possible route we could take in Section \ref{sec:ch2:discover}) to be able to obtain a sensible understanding of what the communities correspond to. 
 
-In many contexts, you might not even know what these communities correspond to at all, and you might have to rethink how the network was collected and work from the ground-up to try to find meaning in the predicted communities. In this sense, once you perform community detection and identify stable communities that appear to be well-separated, your role as a network learning scientist has really just started.
+In many contexts, you might not even know what these communities correspond to at all, and you might have to rethink how the network was collected and work from the ground up to try to find meaning in the predicted communities. In this sense, once you perform community detection and identify stable communities that appear to be well-separated, your role as a network learning scientist has really just started.
 
 \subsection{Extending community detection to other formulations}
 
-Algorithm \ref{alg:ch7:sc} provides a generic formulation of the community detection process for network data with adjacency representations using \texttt{KMeans} and \texttt{ase}. Note that the procedures we detail herein generalize readily to alternative approaches in which the network data can be represented as a matrix. 
+Algorithm \ref{alg:ch7:sc} provides a generic formulation of the community detection process for network data with adjacency representations using \texttt{KMeans} and \texttt{ase}. Note that the procedures we detail generalize readily to alternative approaches in which the network data can be represented as a matrix. 
 
 \begin{algorithm}[h]
 \caption{Unsupervised  spectral community detection from network data with \texttt{KMeans}}
@@ -252,9 +252,9 @@ Let $\hat z_i = \text{argmin}_k d_{ik}$ be the predicted community for node $i$,
 \Return{$\hat z$}
 \end{algorithm}
 
-For instance, we could substitute \texttt{lse} for \texttt{ase}, and potentially be more robust to degree variation in the network. If we had many networks with an underlying shared structure that we wanted to learn about, we could perform \texttt{mase} on our collection of networks, and use unsupervised learning techniques to learn about the underlying shared latent position matrix. If we had particular node covariates that we wanted to incorporate into our clustering, we could use \texttt{case} to embed a weighted combination of topological network structure with node-specific covariates, and produce communities that might meaningfully inform our ability to learn from our network data. Further, we could look to non-spectral embedding techniques as well to learn latent representations about our networks. We will discuss a few in Section \ref{sec:ch10:next}.
+For instance, we could substitute \texttt{lse} for \texttt{ase}, and potentially be more robust to degree variation in the network. If we had many networks with an underlying shared structure that we wanted to learn about, we could perform \texttt{mase} on our collection of networks, and use unsupervised learning techniques to learn about the underlying shared latent position matrix. If we had particular node covariates that we wanted to incorporate into our clustering, we could use \texttt{case} to embed a weighted combination of topological network structures with node-specific covariates, and produce communities that might meaningfully inform our ability to learn from our network data. Further, we could look to non-spectral embedding techniques as well to learn latent representations about our networks. We will discuss a few in Section \ref{sec:ch10:next}.
 
-Finally, as we covered in Remark \ref{box:ch7:gmm}, there are many unsupervised learning techniques that we could leverage (such as \texttt{GMM}) that we could use to estimate community labels from our network. If you do not specify the number of communities ahead of time and wish to evaluate a range of possible numbers of communities, it is important that you choose evaluation criteria that will reflect your choice of clustering technique. As we noted in Remark \ref{box:ch7:gmm}, \texttt{GMM} gives us flexibility in terms of degree-heterogeneities that may materialize in our embeddings. These heterogeneities made the naive Euclidean distance potentially unsuitable if our communities that we expect in our network are elliptical. However, the evaluation criteria that we used for \texttt{KMeans} (the silhouette score) uses this same Euclidean distance, and therefore might run into similar issues if used as a metric for identifying a suitable number of communities. For this reason, there might be more appropriate evaluation metrics for the particular unsupervised learning technique that you identify. In \texttt{GMM}, for instance, a popular choice is number of communities that minimizes the \texttt{BIC}.
+Finally, as we covered in Remark \ref{box:ch7:gmm}, there are many unsupervised learning techniques (such as \texttt{GMM}) that we could leverage to estimate community labels from our network. If you do not specify the number of communities ahead of time and wish to evaluate a range of possible numbers of communities, it is important that you choose evaluation criteria that will reflect your choice of clustering technique. As we noted in Remark \ref{box:ch7:gmm}, \texttt{GMM} gives us flexibility in terms of degree-heterogeneities that may materialize in our embeddings. These heterogeneities made the naive Euclidean distance potentially unsuitable if our communities that we expect in our network are elliptical. However, the evaluation criteria that we used for \texttt{KMeans} (the silhouette score) uses this same Euclidean distance, and therefore might run into similar issues if used as a metric for identifying a suitable number of communities. For this reason, there might be more appropriate evaluation metrics for the particular unsupervised learning technique that you identify. In \texttt{GMM}, for instance, a popular choice is number of communities that minimizes the \texttt{BIC}.
 
 
 

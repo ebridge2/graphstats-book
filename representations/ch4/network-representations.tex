@@ -3,7 +3,7 @@
 
 Now that you know how to represent networks with matrices and have some ideas of properties of networks, let's take a step back and take a look at what network representation is in general, and the different ways you might think about representing networks to understand different aspects of the network.
 
-We already know that the topological structure of networks is just a collection of nodes, with pairs of nodes potentially linked together by edges. Mathematically, this means that a network is defined by two objects: the set of nodes, and the set of edges, with each edge just being defined as a pair of nodes for undirected networks. Networks can have additional structure: you might have extra information about each node (``features'' or ``covariates''), which we'll talk about when we cover Joint Representation Learning in Section \ref{ch6:joint}. Edges might also have weights, which are usually measure the connection strength in some way. We learned in the previous section that network topology can be represented with matrices in a number of ways -- with adjacency matrices, Laplacians, or (less commonly) with incidence matrices. 
+We already know that the topological structure of networks is just a collection of nodes, with pairs of nodes potentially linked together by edges. Mathematically, this means that a network is defined by two objects: the set of nodes, and the set of edges, with each edge just being defined as a pair of nodes for undirected networks. Networks can have additional structure: you might have extra information about each node (``features'' or ``covariates''), which we'll talk about when we cover Joint Representation Learning in Section \ref{sec:ch6:joint}. Edges might also have weights, which are usually measure the connection strength in some way. We learned in the previous section that network topology can be represented with matrices in a number of ways -- with adjacency matrices, Laplacians, or (less commonly) with incidence matrices. 
 
 One major challenge in working with networks is that a lot of standard mathematical operations and metrics remain undefined. What does it mean to add a network to another network, for instance? How would network multiplication work? How do you divide a network by the number 6? Without these kinds of basic operations and metrics, you are left in the dark when you try to find analogies to non-network data analysis.
 
@@ -22,7 +22,7 @@ In this section, we will explore the ways in which we conceptualize network repr
 
 \subsection{Bag of Features}
 
-The first approach is called the bag of features. The idea is that you take networks and you compute statistics from them, either for each node or for the entire network. These statistics could be simple things like the edge count or average path length between two nodes like you learned about in the last section, or more complicated metrics like the modularity {cite:p}`Newman2006Jun`, which measures how well a network can be separated into communities. Unfortunately, network statistics like these tend to be correlated; the value of one network statistic will almost always influence the other. This means that it can be difficult to interpret analysis that works by comparing network statistics. It's also hard to figure out which statistics to compute, since there are an infinite number of them.
+The first approach is called the bag of features. The idea is that you take networks and you compute statistics from them, either for each node or for the entire network. These statistics could be simple things like the edge count or average path length between two nodes like you learned about in the last section, or more complicated metrics like the modularity \cite{Newman2006Jun}, which measures how well a network can be separated into communities. Unfortunately, network statistics like these tend to be correlated; the value of one network statistic will almost always influence the other. This means that it can be difficult to interpret analysis that works by comparing network statistics. It's also hard to figure out which statistics to compute, since there are an infinite number of them.
 
 \subsubsection{You Lose A Lot of Information with the Bag of Features Approach}
 
@@ -35,7 +35,7 @@ Let's take a look at a collection of networks in Figure \ref{fig:ch4:anascombe}:
     \label{fig:ch4:anascombe}
 \end{figure}
 
-Each of these networks, however, are completely different from each other. The first network, for instance, has two connected components, while the others are all connected. The second network has a community of nodes that are only connected along a path, and a different community which are tightly connected, and so on. Modeling these networks through computing these features from them would lose a great deal of useful information about the topology of the network.
+These networks all have the same basic network statistics. Each of these networks, however, are completely different from each other. The first network, for instance, has two connected components, while the others are all connected. The second network has a community of nodes that are only connected along a path, and a different community which are tightly connected, and so on. Modeling these networks through computing these features from them would lose a great deal of useful information about the topology of the network.
 
 
 \paragraph{Network Features Tend to be Correlated}
@@ -43,9 +43,9 @@ Each of these networks, however, are completely different from each other. The f
 
 As we mentioned in the last paragraph, if you consider all possible networks, knowing the value of any of the network features gives you information about what the value of other network features might be.
 
-Let's play around with this. We'll make $100$ random networks, each with $50$ nodes, and then we'll compute some common network statistics that people use in practice. Then, we'll look at how correlated these features are. For now, just think of a random network as being a network with each node being connected to each other node with some set probability. Each network will have a different connection probability. These networks will also have communities --- groups of nodes which have similar connection probabilities of being connected with other groups of nodes. 
+Let's play around with this. We'll make $100$ random networks, each with $50$ nodes, and then we'll compute some common network statistics that people use in practice. Then, we'll look at how correlated these features are. For now, just think of a random network as being a network with each node being connected to each other node with some probability. Each network will have a different connection probability. These networks also might have communities --- groups of nodes which have similar connection probabilities of being connected with other groups of nodes. 
 
-Conceptually, you could think about a particular type of community structure using the bridge example that we covered previously when we talked about the Boston and New York boroughs in the LCC example in Section \ref{sec:ch4:prop-net:lcc}. It is probably more likely that two boroughs that are in the same state have a bridge between them then two boroughs in totally different states, right? When you generate data later on in this book, we'll get into different types of network models you can use. You don't need to have too good of an idea of what the below simulation code is doing just yet --- we will go into more depth in Chapter \ref{sec:ch5}.
+Conceptually, you could think about a particular type of community structure using the bridge example that we covered previously when we talked about the Boston and New York boroughs in the LCC example in Section \ref{sec:ch4:prop-net:lcc}. It is probably more likely that two boroughs that are in the same state have a bridge between them than two boroughs in totally different states, right? When you generate data later on in this book, we'll get into different types of network models you can use. You don't need to have too good of an idea of what the below simulation code is doing just yet --- we will go into more depth in Chapter \ref{sec:ch5}.
 
 \begin{lstlisting}[style=python]
 from graspologic.simulations import sbm
@@ -274,7 +274,7 @@ ax.annotate("Nodes plotted \nas 2d points", xy=(x_centroid-.2, y_centroid+.2), x
     \centering
     \includegraphics[width=\linewidth]{representations/ch4/Images/bagonode.png}
     \caption{Nodes in the same community ending up being in similar areas of the $x$/$y$ coordinate axis above.}
-    \label{fig:bagonode}
+    \label{fig:ch4:bagonode}
 \end{figure}
 
 \subsection{Bag of Networks}
@@ -308,8 +308,6 @@ for _ in range(12):
     second_group.append(network)
 \end{lstlisting}
 
-\begin{lstlisting}[style=python]
-\end{lstlisting}
 Again, don't worry too much yet about the process with which these networks were generated - that will all be explained in the next chapter. All you need to get out of this code is that you have six networks from the first group, and another twelve networks from the second. You can see these networks in heatmap form below. These networks are plotted in Figure \ref{fig:ch4:bagonets}(A). 
 
 Now, you have to figure out some way of plotting each network as a point in space. Here's a rough overview for how you'll do it.
@@ -341,7 +339,8 @@ You can see the dissimilarity matrix in Figure \ref{fig:ch4:bagonets}(B). As you
 Embedding this {new} matrix will give us a point in space for each network. Once you find the embedding for this dissimilarity matrix via MDS as above, you can plot each of the networks in space. Since there are six networks of the first type and twelve of the second type, one of the clusters has six dots, and the other has twelve dots. Let's take a look at this plot:
 \begin{lstlisting}[style=python]
 ax = draw_cartesian(xrange=(-1, 1), yrange=(-1, 1))
-plot_latents(cmds_embedding, ax=ax, labels=labels)
+labels = np.repeat([0, 1], [len(first_group), len(second_group)])
+plot_latents(cmds_embedding, ax=ax, labels=labels, title="Networks plotted as 2d points")
 \end{lstlisting}
 
 \begin{figure}

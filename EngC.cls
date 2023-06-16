@@ -2244,8 +2244,8 @@
   \FrameRule=0.5pt
   \FrameSep=6pt
 
-\newcounter{floatingbox}[chapter]
-\def\thefloatingbox{\thechapter.\@arabic\c@floatingbox}
+\newcounter{floatingbox}[subsection]
+\def\thefloatingbox{\thesection.\@arabic\c@floatingbox}
 \def\fps@floatingbox{tbp}
 \def\ftype@floatingbox{2}
 \def\ext@floatingbox{lofb}
@@ -2712,4 +2712,3 @@
 \flushbottom
 \frenchspacing
 \endinput
-

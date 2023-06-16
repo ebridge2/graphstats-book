@@ -1,9 +1,9 @@
 \section{Properties of random networks}
 \label{sec:ch5:prop}
 
-In this section, we'll take a step back and appreciate some of the other descriptive properties that we can use to describe random networks. We will review many ideas that we discussed in Chapter \ref{sec:ch4}, which were properties and statistics that we calculate for networks. These ideas will be reformulated for random networks that you have learned about in this Chapter. 
+In this section, we'll take a step back and appreciate some of the other descriptive properties that we can use to describe random networks. We will review many ideas that we discussed in Chapter \ref{sec:ch4}, which were properties and statistics that we can calculate for networks. These ideas will be reformulated for random networks that you have learned about in this Chapter. 
 
-The key distinction is that unlike with networks that you observe (which have nodes and edges), random networks have nodes and potential edges which exist (or do not) with some probability. This means that properties of these networks will not be exact values; rather, they will be random quantities. However, we can still describe these random quantities using basic concepts from statistics. 
+The key distinction is that unlike networks you've already observed (which have nodes and edges), random networks have nodes and potential edges which exist (or do not) with some probability. This means that properties of these networks will not be exact values; rather, they will be random quantities. However, we can still describe these random quantities using basic concepts from statistics. 
 
 \subsection{A quick recap of expected values}
 
@@ -37,9 +37,9 @@ and you are expected to make $\$\frac{15}{4}$ from this game.
 
 \subsection{Rethinking edge probabilities as expected values}
 
-The equation that you saw in Equation \eqref{eqn:ch5:exp:binary} should look very familiar to you. Remember that in a network, $\mathbf a_{ij}$ is just a binary quantity, just like $\mathbf x$.
+The equation that you saw in Equation \eqref{eqn:ch5:exp:binary} should look very familiar to you. Remember that in a network, $\mathbf a_{ij}$ is just a binary quantity, like $\mathbf x$.
 
-Remember that if $\mathbf A$ is a $IER_n(P)$ random network, that the probability matrix $P$ has entries $p_{ij}$ for each pair of nodes $i$ and $j$ that describe the probability that $\mathbf a_{ij}$ has a value of $1$.
+Remember that if $\mathbf A$ is a $IER_n(P)$ random network, the probability matrix $P$ has entries $p_{ij}$ for each pair of nodes $i$ and $j$ that describe the probability that $\mathbf a_{ij}$ has a value of $1$.
 
 This means that we can compute the expected value of each adjacency in the network using the formula, as:
 \begin{align*}
@@ -66,7 +66,7 @@ Similarly, the \textit{random node degree} for a random network $\mathbf A$ is d
 \begin{align*}
     \mathbf d_i &= \sum_{j \neq i}\mathbf a_{ij}.
 \end{align*}
-This quantity is random, in that it is not necessarily any particular value, but rather, takes a number of possible values with a probability. We can use the properties that we learned above to compute the expected degree:
+This quantity is random, in that it is not necessarily any particular value: it takes a number of possible values with a probability. We can use the properties that we learned above to compute the expected degree:
 \begin{align*}
     \mathbb E[\mathbf d_i] &= \mathbb E\left[\sum_{j \neq i}\mathbf a_{ij}\right] \\
     &= \sum_{j \neq i}\mathbb E[\mathbf a_{ij}],\numberthis \label{eqn:ch5:exp:deg:e1}
@@ -107,7 +107,7 @@ Likewise, the \textit{density of a random network} $\mathbf A$ is defined as:
 \end{align*}
 As before, this quantity is random, so it does not have any particular value. However, its expected value can be computed using the rules that we described above exactly.
 
-First, notice that if the network has $n$ nodes, that $\binom n 2$ is simply a constant. THis means that:
+First, notice that if the network has $n$ nodes, $\binom n 2$ is simply a constant. This means that:
 \begin{align*}
     \mathbb E[density(\mathbf A)] &= \mathbb E\left[\frac{\sum_{j > i}\mathbf a_{ij}}{\binom n 2}\right] \\
     &= \frac{1}{\binom n 2}\mathbb E\left[\sum_{j > i}\mathbf a_{ij}\right],

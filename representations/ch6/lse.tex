@@ -157,7 +157,7 @@ You can perform \texttt{lse} using \texttt{graspologic}:
 from graspologic import LaplacianSpectralEmbed as lse
 
 d = 2  # embed into two dimensions
-Xhat_lapl = lse(n_components).fit_transform(A)
+Xhat_lapl = lse(n_components=d).fit_transform(A)
 D_lapl = distance_matrix(Xhat_lapl, Xhat_lapl)
 \end{lstlisting}
 
@@ -184,6 +184,7 @@ A primary visualization to determine whether \texttt{ase} or \texttt{lse} are ap
 
 \begin{lstlisting}[style=python]
 import seaborn as sns
+import pandas as pd
 
 # compute the degrees for each node, using the
 # row-sums of the network

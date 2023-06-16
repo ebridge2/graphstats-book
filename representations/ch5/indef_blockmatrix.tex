@@ -1,14 +1,14 @@
 \section{Positive Semi-Definite Block Matrices}
 \label{sec:ch5:psd_block}
 
-As you can see by now, the difference between the $RDPG_n(X)$ and the $SBM_n(\vec z, B)$ or the $DCSBM_n(\vec z, \vec \theta, B)$ random networks boils down to a relatively obtuse mathematical concept: the semi-definiteness of the block matrix $B$ (or lackthereof). Remember that the block matrix $B$ is a $K \times K$ probability matrix (with one row/column for each of the $K$ communities).
+The primary difference between the $RDPG_n(X)$ and the $SBM_n(\vec z, B)$ or the $DCSBM_n(\vec z, \vec \theta, B)$ random networks boils down to a relatively obtuse mathematical concept: the semi-definiteness of the block matrix $B$ (or lackthereof). Remember that the block matrix $B$ is a $K \times K$ probability matrix (with one row/column for each of the $K$ communities).
 
-While we promised not to go too deep into the technicalities of linear algebra, we decided that a suitable definition of semi-definiteness of the block matrix for our purposes was that the block matrix $B$ could be decomposed into the product of another matrix, $\sqrt B$, with its transpose $\sqrt B^\top$. The matrix $\sqrt B$ is formally called the Gram matrix, which you can learn about by studying matrix analysis \cite{Horn2012Oct}. For our purposes, understanding it to be the ``square-root matrix'' of the block matrix will suffice. While conceptualizing this result entirely is a bit beyond the scope of our book, we used this fact to conclude that a suitable ``test'' of when $B$ was positive semi-definite was:
+We decided that a suitable definition of semi-definiteness of the block matrix for our purposes was that the block matrix $B$ could be decomposed into the product of another matrix, $\sqrt B$, with its transpose $\sqrt B^\top$. The matrix $\sqrt B$ is formally called the Gram matrix, which is common in matrix analysis \cite{Horn2012Oct}. For our purposes, understanding it to be the ``square-root matrix'' of the block matrix will suffice. While conceptualizing this result entirely is a bit beyond the scope of our book, we used this fact to conclude that a suitable ``test'' of when $B$ was positive semi-definite was a check that all of the eigenvalues of B were greater than or equal to 0:
 
 \begin{lstlisting}[style=python]
 import numpy as np
 
-def block_mtx_psd(B):
+def is_psd(B):
     """
     A function which indicates whether a block matrix
     B is positive semi-definite.
@@ -16,7 +16,7 @@ def block_mtx_psd(B):
     return np.all(np.linalg.eigvals(B) >= 0)
 \end{lstlisting}
 
-Let's restrict ourselves precisely to the $2 \times 2$ case, so that we can build up some intuition for what a positive semi-definite block matrix looks like. In this case, the block matrix is:
+Let's restrict ourselves precisely to the $2 \times 2$ case, in which we have two communities, so that we can build up some intuition for what a positive semi-definite block matrix looks like. In this case, the block matrix is:
 \begin{align*}
     B &= \begin{bmatrix}
         b_{11} & b_{12} \\
@@ -56,9 +56,10 @@ Next, let's generate and plot a homophilic block matrix, so that we can start to
 import numpy as np
 from graphbook_code import heatmap
 
-B = np.array([[0.6, 0.2], [0.2, 0.4]])
+B = np.array([[0.6, 0.2], 
+              [0.2, 0.4]])
 heatmap(B, title="A homophilic block matrix", annot=True)
-block_mtx_psd(B)
+is_psd(B)
 # True
 \end{lstlisting}
 
@@ -81,8 +82,9 @@ We can generate an indefinite planted partition block matrix by just making an e
 
 
 \begin{lstlisting}[style=python]
-B_indef = np.array([[.1, .2], [.2, .1]])
-block_mtx_psd(B_indef)
+B_indef = np.array([[.1, .2], 
+                    [.2, .1]])
+is_psd(B_indef)
 # False
 \end{lstlisting}
 
@@ -101,13 +103,15 @@ A \textit{kidney-egg} block matrix is a $2 \times 2$ block matrix where $b_{12} 
 
 \begin{lstlisting}[style=python]
 # a positive semi-definite kidney-egg block matrix
-B_psd = np.array([[.6, .2], [.2, .2]])
-block_mtx_psd(B_psd)
+B_psd = np.array([[.6, .2], 
+                  [.2, .2]])
+is_psd(B_psd)
 # True
 
 # an indefinite kidney-egg block matrix
-B_indef = np.array([[.1, .2], [.2, .2]])
-block_mtx_psd(B_indef)
+B_indef = np.array([[.1, .2], 
+                    [.2, .2]])
+is_psd(B_indef)
 #False
 \end{lstlisting}
 
@@ -124,13 +128,15 @@ Let's show how this condition works with some more examples:
 
 \begin{lstlisting}[style=python]
 # a positive semi-definite core-periphery block matrix
-B_psd = np.array([[.6, .2], [.2, .1]])
-block_mtx_psd(B_psd)
+B_psd = np.array([[.6, .2], 
+                  [.2, .1]])
+is_psd(B_psd)
 # True
 
 # an indefinite core-periphery block matrix
-B_indef = np.array([[.6, .2], [.2, .05]])
-block_mtx_psd(B_indef)
+B_indef = np.array([[.6, .2], 
+                    [.2, .05]])
+is_psd(B_indef)
 # False
 \end{lstlisting}
 
@@ -145,8 +151,9 @@ To conceptualize what this would mean for a network, let's imagine that we have 
 We can generate a disassortative block probability matrix like this:
 \begin{lstlisting}[style=python]
 # an indefinite disassortative block matrix
-B = np.array([[.1, .5], [.5, .2]])
-block_mtx_psd(B)
+B = np.array([[.1, .5], 
+              [.5, .2]])
+is_psd(B)
 # False
 \end{lstlisting}
 
@@ -158,7 +165,8 @@ When a real matrix $W$ is positive semi-definite, as we mentioned, we can obtain
 
 \begin{lstlisting}[style=python]
 # homophilic, and hence positive semi-definite, block matrix
-B = np.array([[0.6, 0.2], [0.2, 0.4]])
+B = np.array([[0.6, 0.2], 
+              [0.2, 0.4]])
 
 # generate square root matrix
 sqrtB = np.linalg.cholesky(B)
@@ -180,7 +188,7 @@ def lpm_from_sbm(z, B):
     A function to produce a latent position matrix from a
     community assignment vector and a block matrix.
     """
-    if not block_mtx_psd(B):
+    if not is_psd(B):
         raise ValueError("Latent position matrices require PSD block matrices!")
     # one-hot encode the community assignment vector
     C = ohe_comm_vec(z)
@@ -191,7 +199,7 @@ def lpm_from_sbm(z, B):
 
 # make a community assignment vector for 25 nodes / community
 nk = 25
-z = [1 for i in range(0, nk)] + [2 for i in range(0, nk)]
+z = np.repeat([1, 2], 25)
 
 # latent position matrix for an equivalent RDPG
 X = lpm_from_sbm(z, B)
@@ -273,7 +281,7 @@ What would be the latent position vector for another node $j'$ also in community
 
 You can generalize this pattern to {any} nodes in the same community for an $SBM_n(\vec z, B)$ random network with a positive semi-definite block matrix: they will {always} have the same latent position vectors. 
 
-We show an example of a homophilic block matrix matrix in Figure \ref{fig:ch5:psd_block:sbm_lpm}(A), which you learned above is positive semi-definite because it is homophilic. When we apply the conversion utility \texttt{lpm\_from\_sbm()}, we produce the latent position matrix in Figure \ref{fig:ch5:psd_block:sbm_lpm}(C). Notice that the rows for each of the two communities are equal. 
+We show an example of a homophilic block matrix in Figure \ref{fig:ch5:psd_block:sbm_lpm}(A), which you learned above is positive semi-definite because it is homophilic. When we apply the conversion utility \texttt{lpm\_from\_sbm()}, we produce the latent position matrix in Figure \ref{fig:ch5:psd_block:sbm_lpm}(C). Notice that the rows for each of the two communities are equal. 
 
 This insight provides us with the answer to the side note that we mentioned in Section \ref{sec:ch5:ier:rdpg_sbm}, that the street example provided a counter example indicating that not all $RDPG_n(X)$ random networks can be represented as $SBM_n(\vec z, B)$ random networks. For the street example, all of the latent positions are different for each node. If it were possible to represent the street example as an $SBM_n(\vec z, B)$ random network with $K < n$ communities, there would need to exist a group of nodes with the same latent position vector.
 
@@ -324,7 +332,7 @@ Again, these two vectors are identical when $\theta_j = \theta_{j'}$. The degree
 
  This example is shown in Figure \ref{fig:ch5:psd_block:dcsbm_lpm}(D). Notice that the rows of the latent position matrix (the latent positions for each node) follow the same pattern (in magnitude) of the degree-correction vector in Figure \ref{fig:ch5:psd_block:dcsbm_lpm}(B). This is no accident: the degree-correction vector is  {rescaling} the latent position associated with the particular community.
 
- Even though the $DCSBM_n(\vec z, \theta, B)$ random networks are more complicated than the $SBM_n(\vec z, B)$ random networks due to the degree-correction factor, this still shows us that there are some $RDPG_n(X)$ random networks which cannot be represented as $DCSBM_n(\vec z, \theta, B)$ random networks with $K < n$. Working back to the street example again, there is no choice of degree-correction factors $\vec \theta$ which would allow us to rescale the latent position associated with a community and obtain the latent positions in the street example. Intuitively, you can conceptualize this result by noticing that the values of the latent dimensions from Figure \ref{fig:ch5:rdpg} for the street example have a pattern of taking opposites: as the value in latent dimension one increases, the value in latent dimension two decreases, and vice-versa(where all values of the latent position matrix were positive). Accounting for this with a degree-correction factor would require at a minimum that the pattern is the same; both would have to be simultaneously increasing or decreasing due to the fact that the latent position matrix has only positive entries.
+ Even though the $DCSBM_n(\vec z, \theta, B)$ random networks are more complicated than the $SBM_n(\vec z, B)$ random networks due to the degree-correction factor, this still shows us that there are some $RDPG_n(X)$ random networks which cannot be represented as $DCSBM_n(\vec z, \theta, B)$ random networks with $K < n$. Working back to the street example again, there is no choice of degree-correction factors $\vec \theta$ which would allow us to rescale the latent position associated with a community and obtain the latent positions in the street example. Intuitively, you can conceptualize this result by noticing that the values of the latent dimensions from Figure \ref{fig:ch5:rdpg} for the street example have a pattern of taking opposites: as the value in latent dimension one increases, the value in latent dimension two decreases, and vice-versa (where all values of the latent position matrix were positive). Accounting for this with a degree-correction factor would require at a minimum that the pattern is the same; both would have to be simultaneously increasing or decreasing due to the fact that the latent position matrix has only positive entries.
  
 So, we learned two things here:
 \begin{enumerate}
@@ -353,7 +361,7 @@ Conclude that planted-partition DCSBMs with the degree-correction vector generat
 \end{floatingbox}
 \newpage
 
-\begin{floatingbox}[h]\caption{Degree-correction factor ``stretch'' latent positions}
+\begin{floatingbox}[h]\caption{Exercise: Degree-correction factors ``stretch'' latent positions}
 \label{box:ch5:psd_block:stretch}
 Take a positive semi-definite block matrix $B$ associated with a $2$-community $SBM_n(\vec z, B)$ random network (for instance, the homophilic block matrix we used in the examples here). Take a range of values for $\theta$, from $0$ to $1$ in $0.1$ increments, and compute the latent position matrix for the $SBM_n(\vec z, B)$ random network. This will give you a $n \times 2$-dimensional latent position matrix.
 \begin{enumerate}

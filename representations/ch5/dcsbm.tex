@@ -2,7 +2,7 @@
 \label{sec:ch5:dcsbm}
 
 
-For this network model, we're going to start off with our school example that we covered in Section \ref{sec:ch5:sbm}. There are $100$ students, who each attend one of two schools. The edges of the network represent whether a pair of students are friends. If two students attend the same school, they have a higher chance of being friends than if they attend different schools. 
+For this network model, we're going to start off with the school example that we covered in Section \ref{sec:ch5:sbm}. Remember that there are $100$ students, who each attend one of two schools. The edges of the network represent whether a pair of students are friends. If two students attend the same school, they have a higher chance of being friends than if they attend different schools. 
 
 In a lot of real-world networks, this model works pretty effectively. It captures ``community structure'' in a very succinct way, but it has a glaring weakness. To explore this weakness, we would recommend that more advanced statistics users check out the Appendix Section \ref{sec:app:ch12:dcsbms}. Basically, the idea is this: within a given community, we have {no way} to represent fundamental differences between nodes in our SBM. Stated another way, if node $i$ and node $j$ are both in the same commuity, they will, on average, have the same {node degree}, which is a concept that you learned about in Section \ref{sec:ch4:prop-net:degree}. 
 
@@ -22,7 +22,7 @@ If $\mathbf A$ is a DCSBM random network with $n$ nodes, the community vector $\
 
 As you might expect now that we have completed Section \ref{sec:ch5:ier} on IER random networks, the DCSBM can be easily tied to the IER random networks. Notice that above, we can take the probability $p_{ij} = \theta_i \theta_j b_{z_i z_j}$. This relationship demonstrates that there is a \textit{slight} condition on the vector $\vec \theta$ in order to ensure that the model that we specify is a valid random network model. In particular, for all pairs of nodes $i$ and $j$, the probability that an edge exists needs to be a probability, which means that it is between $0$ and $1$. 
 
-To make this a little bit more concrete, a simple way to do this would be to develop a procedure for $P$ like we found for the SBM, and then check that $P$ is a matrix where all of its entries are between $0$ and $1$. To do this, we use the degree-correction matrix, which is simply a diagonal matrix whose entries are the degree-correction factors. We will denote this matrix with $n$ rows and $n$ columns by $\Theta$ (uppercase $\theta$, since it is a matrix):
+To make this a little bit more concrete, a simple way to do this would be to develop a procedure for generating $P$ like we found for the SBM, and then check that $P$ is a matrix where all of its entries are between $0$ and $1$. We'll use the degree-correction matrix, which is simply a diagonal matrix whose entries are the degree-correction factors. We will denote this matrix with $n$ rows and $n$ columns by $\Theta$ (uppercase $\theta$, since it is a matrix):
 
 \begin{align}
     \Theta &= \begin{bmatrix}
@@ -80,9 +80,11 @@ This means that:
     p_{ij} = (\Theta P' \Theta^\top)_{ij} = \theta_i \theta_j b_{z_i z_j}.
 \end{align*}
 
-Notice that the entries of this matrix are exactly the probability of an edge existing in a $DCSBM_n(\vec z, \vec \theta, B)$ random network. In this sense, we can think of the degree-correction factor $\vec \theta$ as ``inflating'' or ``deflating'' the block probabilities of an $SBM_n(\vec z, B)$ random network based on a node's popularity $\theta_i$ or $\theta_j$. We can observe this by comparing the result that we obtained above with the result that we saw in Equation \eqref{eqn:ch5:ier:sbm_p}. We will pivot back to this observation in Section \ref{sec:ch5:psd_block:same_lp} to study it more in-depth.
+Notice that the entries of this matrix are exactly the probability of an edge existing in a $DCSBM_n(\vec z, \vec \theta, B)$ random network. In this sense, we can think of the degree-correction factor $\vec \theta$ as ``inflating'' or ``deflating'' the block probabilities of an $SBM_n(\vec z, B)$ random network based on a node's popularity $\theta_i$ or $\theta_j$. We can observe this by comparing the result that we obtained above with the result that we saw in Equation \eqref{eqn:ch5:ier:sbm_p}. 
+To ensure that these entries are actual probabilities, we can use the logic described in Concept \ref{box:ch5:dcsbm_valid_degcor}. We will pivot back to this observation in Section \ref{sec:ch5:psd_block:same_lp} to study it more in-depth.
 
-\begin{floatingbox}[h]\caption{When is a degree-correction vector $\vec \theta$ valid?}
+\begin{floatingbox}[h]\caption{Concept: When is a degree-correction vector $\vec \theta$ valid?}
+\label{box:ch5:dcsbm_valid_degcor}
 Technically, not every choice of a degree-correction vector will be valid, in that the equation $P = \Theta CBC^\top \Theta^\top$ that you described above might not {necessarily} produce a probability matrix. To ensure that it is a probability matrix, all that we need to do is ensure that $\vec\theta$ is a vector and $B$ is a probability matrix where the resulting $P$ matrix has entries which are between $0$ and $1$.
 
 If you are using $DCSBM_n(\vec z, \vec \theta, B)$ for simulations or for toying around, one very easy way to do this is to just choose $\theta$ such that the maximum value is $1$, and then adjust $B$ accordingly. The product of a degree-correction factor (which is between $0$ and $1$) and a block probability (which is also between $0$ and $1$) will always be a probability (between $0$ and $1$), so either of these approaches are guaranteed to produce degree-correction factors that produce valid probability matrices.
@@ -107,6 +109,10 @@ As we concluded in Section \ref{sec:ch5:ier:rdpg_sbm}, we could produce a latent
 where in the last line we used the fact that $\sqrt B\sqrt B^\top = B$. 
 
 This means that the $DCSBM_n(\vec z, \vec \theta, B)$ random networks with fewer communities than nodes which have a positive semi-definite probability matrix are less complex than the $RDPG_n(X)$ random networks. Further, the $DCSBM_n(\vec z, \vec \theta, B)$ random networks with fewer communities than nodes are more complex than the $SBM_n(\vec z, B)$ random networks with fewer communities than nodes, because we could always just take the degree-correction factor $\vec \theta$ to be a vector of ones for any possible community-assignment vector $\vec z$ and block matrix $B$. However, the reverse does not hold true. To think about this, try to imagine what happens when the degree-correction vector has a unique value for each node. Finally, the $DCSBM_n(\vec z, \vec \theta, B)$ random networks with indefinite probability matrices are distinct from $RDPG_n(X)$ random networks.
+
+\begin{floatingbox}[h]\caption{}
+    
+\end{floatingbox}
 
 \subsection{How do you simulate samples of a $DCSBM_n(\vec z, \vec \theta, B)$ random network?}
 
@@ -143,16 +149,19 @@ def dcsbm(z, theta, B, directed=False, loops=False, return_prob=False):
     # apply the degree correction
     Theta = np.diag(theta)
     P = Theta @ Pp @ Theta.transpose()
-    robj = sample_edges(P, directed=directed, loops=loops)
+    network = sample_edges(P, directed=directed, loops=loops)
     if return_prob:
-        robj = (robj, P)
-    return robj
+        network = (network, P)
+    return network
 
-nk = 50  # 50 students per school
-z = np.array([1 for i in range(nk)] + [2 for i in range(nk)])
+# Observe a network from a DCSBM
+nk = 50  # students per school
+z = np.repeat([1, 2], 50)
 B = np.array([[0.6, 0.2], [0.2, 0.4]])  # same probabilities as from SBM section
 theta = np.tile(np.linspace(1, 0.5, nk), 2)
 A, P = dcsbm(z, theta, B, return_prob=True)
+
+# Visualize
 plot_vector(z, title="$\\vec z$", legend_title="School", color="qualitative", 
             ticks=[0.5, 49.5, 99.5], ticklabels=[1, 50, 100],
             ticktitle="Student")
@@ -178,7 +187,7 @@ To begin to understand this, we will first think about the stochastic block mode
 \begin{align*}
     \mathbb E[\mathbf d_i ; z_i = 1] &= \sum_{j \neq i} \mathbb E[\mathbf a_{ij}; z_i = 1] = \sum_{j \neq i}p_{ij}.
 \end{align*}
-All that the semicolon means is that we are proceeding with the assumption that we are calculating the expected degree for a node where $z_i = 1$ (the node $i$ is in communuity $1$). 
+All that the semicolon means is that we are proceeding with the assumption that we are calculating the expected degree for a node where $z_i = 1$ (the node $i$ is in community $1$, and $z$ is the vector denoting the community of each node). 
 
 For the stochastic block model, this relationship is extremely simple. If node $i$ is in community $1$, this sum can be split into:
 \begin{align*}
@@ -200,7 +209,8 @@ When we work through the same math as we showed above, this time we get:
 \end{align*}
 and the expected degree of the node $i$ is ``degree-corrected'' by its degree-correction factor $\theta_i$. 
 
-\begin{floatingbox}[h]\caption{The expected node degree for block models}
+\begin{floatingbox}[h]\caption{Concept: The expected node degree for block models}
+\label{box:ch5:dcsbm:exp_deg}
 If $\mathbf A$ is a $SBM_n(\vec z, B)$ random network with $n$ nodes and $K$ communities, then the expected degree of a node $i$ is:
 \begin{align*}
     \mathbb E[\mathbf d_i ; z_i = k] &= \sum_{l \neq k} n_l b_{lk} + (n_k - 1)b_{kk}.

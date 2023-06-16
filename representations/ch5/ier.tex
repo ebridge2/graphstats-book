@@ -34,31 +34,36 @@ As before, we develop a procedure in Algorithm \ref{alg:ch5:ier} to produce for 
 Notice that the model that we described for an $IER_n(P)$ random network is, in fact, equal to a very uninformative $SBM_n(\vec z, B)$ random network. If the network is simple, we could simply assign each node to its own community; e.g., the number of communities is $n$. Then, we can just let the block matrix $B$ be equal to the probability matrix $P$. However, if the number of communities is not equal to the number of nodes, this is not generally the case.
 \end{floatingbox}
 
-Let's put this in practice. Let's first generate a probability matrix that is sufficiently unnecessarily complicated that we couldn't capture it with the any Erd\"os R\'enyi, Stochastic Block Model with the fewer communities than nodes, nor an RDPG:
+Let's create an example. We'll first generate a probability matrix that is unnecessarily complicated such that we couldn't capture it with the any Erd\"os R\'enyi, Stochastic Block Model with the fewer communities than nodes, nor an RDPG:
 
 \begin{lstlisting}[style=python]
 import numpy as np
 from graphbook_code import heatmap
 
-def my_unit_circle(r):
-   d = 2*r + 1
-   rx, ry = d/2, d/2
-   x, y = np.indices((d, d))
-   return (np.abs(np.hypot(rx - x, ry - y)-r) < 0.5).astype(int)
+def generate_unit_circle(radius):
+    diameter = 2*radius + 1
+    rx = ry = diameter/2
+    x, y = np.indices((diameter, diameter))
+
+    circle_dist = np.hypot(rx - x, ry - y)
+    diff_from_radius = np.abs(circle_dist - radius)
+    less_than_half = diff_from_radius < 0.5
+
+    return less_than_half.astype(int)
 
 def add_smile():
-    Ptmp = np.zeros((51, 51))
-    Ptmp[2:45, 2:45] = my_unit_circle(21)
+    canvas = np.zeros((51, 51))
+    canvas[2:45, 2:45] = generate_unit_circle(21)
     mask = np.zeros((51, 51), dtype=bool)
     mask[np.triu_indices_from(mask)] = True
     upper_left = np.rot90(mask)
-    Ptmp[upper_left] = 0
-    return Ptmp
+    canvas[upper_left] = 0
+    return canvas
     
-def smiley_prob(upper_p, lower_p):
+def smile_probability(upper_p, lower_p):
     smiley = add_smile()
-    P = my_unit_circle(25)
-    P[5:16, 25:36] = my_unit_circle(5)
+    P = generate_unit_circle(25)
+    P[5:16, 25:36] = generate_unit_circle(5)
     P[smiley != 0] = smiley[smiley != 0]
     
     mask = np.zeros((51, 51), dtype=bool)
@@ -69,7 +74,7 @@ def smiley_prob(upper_p, lower_p):
     P[P == 0] = upper_p
     return P
 
-P = smiley_prob(.95, 0.05)
+P = smile_probability(.95, 0.05)
 heatmap(P, vmin=0, vmax=1, title="Probability matrix $P$")
 \end{lstlisting}
 
@@ -82,7 +87,7 @@ A = sample_edges(P, directed=False, loops=False)
 heatmap(A.astype(int), title="$IER_n(P)$ sample")
 \end{lstlisting}
 
-The heatmap is shown in Figure \ref{fig:ch5:ier}(B). We used this example to show you the key idea behind the IER Network's probability matrix is simple: the entries can really be anything as long as they are probabilities (between $0$ and $1$), and the resulting matrix is symmetric (in the case of undirected networks). There are no additional requirements nor parameters to add structure to the network.
+The heatmap is shown in Figure \ref{fig:ch5:ier}(B). We used this example to show you that the key idea behind the IER Network's probability matrix is simple: the entries can really be anything as long as they are probabilities (between $0$ and $1$), and the resulting matrix is symmetric (in the case of undirected networks). There are no additional requirements nor parameters to add structure to the network.
 
 \begin{figure}
     \centering
@@ -99,9 +104,9 @@ The class of models that we have learned about so far are more generally known a
 \label{sec:ch5:ier:ier_generalises}
 The $IER_n(P)$ random network is more complex than every model that we have learned to date.
 \begin{enumerate}
-    \item Erd\"os R\'enyi with probability $p$: all entries $p_{ij}$ of $P$ can just be set equal to $p$,
+    \item Erd\"os R\'enyi with probability $p$: all entries $p_{ij}$ of $P$ can just be set equal to $p$
     \item Stochastic block model with community assignment vector $\vec z$ and block matrix $B$: construct the probability matrix $P$ such that $p_{ij} = b_{z_iz_j}$ of the block matrix $B$ where the communities of nodes $i$ and $j$ are $z_i$ and $z_j$, respectively.
-    \item Random Dot Product Graph with latent position matrix $X$: Let $P$ such that $P = XX^\top$. Note that the entries of $P$ by definition of matrix multiplication will be $p_{ij} = \vec x_i^\top \vec x_j$, which was exactly the relationship that we established in Section \ref{sec:ch5:rdpg}.
+    \item Random Dot Product Graph with latent position matrix $X$: Let there be a $P$ such that $P = XX^\top$. Note that the entries of $P$ by definition of matrix multiplication will be $p_{ij} = \vec x_i^\top \vec x_j$, which was exactly the relationship that we established in Section \ref{sec:ch5:rdpg}.
 \end{enumerate}
 
 \paragraph{How do we generate a probability matrix from a $SBM_n(\vec z, B)$?}
@@ -125,7 +130,7 @@ Construct a matrix $C$ with $n$ rows and $K$ columns; one row for each node, and
 Let $P = CBC^\top$.
 \end{algorithm}
 
-Let's break down exactly how this works. The matrix $C$ is better known as a one-hot encoding of the matrix $\vec z$. When we multiply $CB$, the matrix product will be the $n \times k$ matrix:
+Let's break down exactly how this works. The matrix $C$ is better known as a one-hot encoding of the vector $\vec z$. When we multiply $CB$, the matrix product will be the $n \times k$ matrix:
 \begin{align*}
     (CB)_{ik} = \sum_{l = 1}^Kc_{il} b_{lk}.
 \end{align*}
@@ -142,7 +147,11 @@ This matrix is going to end up looking something like this:
         b_{z_n1} & \hdots & b_{z_n K}
     \end{bmatrix}.
 \end{align*}
-So each row of $CB$ corresponds to a single node $i$ in the network, identifies the community of that node, and then ``extracts'' from the block matrix all of the other communities that another node $j$ could possibly be in. When we right-multiply by $C^\top$, what we get is:
+So each row of $CB$ corresponds to a single node $i$ in the network, identifies the community of that node, and then ``extracts'' from the block matrix all of the other communities that another node $j$ could possibly be in. This means that the $i^{th}$ row of the matrix $CB$ delineates all possible probabilities that a node in the network could have with other nodes in the network (depending on the other node's community, which is indicated in the column).
+
+Multiplying the $CB$ matrix by $C^\top$ allows us to relate the probability information to the other nodes in the network. This step takes the probabilities for a given node $i$ with other nodes of arbitrary community (from the $CB$ matrix), and then cross-references them with the actual communities that nodes in the network are a part of.
+
+When we right-multiply by $C^\top$, what we get is:
 \begin{align*}
     (CBC^\top)_{ij} = \sum_{l = 1}^Kc_{jl}b_{z_il}.
 \end{align*}
@@ -150,16 +159,19 @@ As before, $c_{jl} = 1$ if $z_j = l$, and $0$ otherwise. So for each entry:
 \begin{align*}
     p_{ij} = (CBC^\top)_{ij} = b_{z_i z_j}. \numberthis \label{eqn:ch5:ier:sbm_p}
 \end{align*}
-Notice that this aligns exactly with the result that we obtained in Section \ref{sec:ch5:ier:ier_generalises}.
+
+So, $C$ encodes the community of each source node, $B$ provides the connection probabilities between communities, and $C^\top$ encodes the community of each target node. The result, $p_{ij} = (CBC^\top)_{ij}$, gives the probability that node $i$ and node $j$ are connected in the network, given their community assignments. Notice that this aligns exactly with the result that we obtained in Section \ref{sec:ch5:ier:ier_generalises}.  
+
 
 Let's work through this example programmatically, because it comes up a few times over the course of the book. Let's imagine that we have $50$ nodes, of which the first $25$ are in community one and the second $25$ are in community two. The code to do this conversion looks like this:
 
 \begin{lstlisting}[style=python]
-def ohe_comm_vec(z):
+def encode(community_assignments):
     """
     A function to generate the one-hot-encoded community
     assignment matrix from a community assignment vector.
     """
+    z = community_assignments
     K = len(np.unique(z))
     n = len(z)
     C = np.zeros((n, K))
@@ -167,20 +179,20 @@ def ohe_comm_vec(z):
         C[i, zi - 1] = 1
     return C
 
-def generate_sbm_pmtx(z, B):
+def sbm_probabilities(z, B):
     """
     A function to generate the probability matrix for an SBM.
     """
-    C = ohe_comm_vec(z)
-    # probability matrix
+    C = encode(z)
     return C @ B @ C.T
 
 # the community assignment vector
-z = [1 for i in range(0, 25)] + [2 for i in range(0, 25)]
+z = np.repeat([1, 2], 25)
 # block matrix
-B = np.array([[0.6, 0.3], [0.3, 0.6]])
+B = np.array([[0.6, 0.3], 
+              [0.3, 0.6]])
 # probability matrix
-P = generate_sbm_pmtx(z, B)
+P = sbm_probabilities(z, B)
 \end{lstlisting}
 
 The relationship between the community assignment vector, the community assignment matrix, the block matrix, and the probability matrix is illustrated in Figure \ref{fig:ch5:ier:sbm}.
@@ -195,37 +207,39 @@ The relationship between the community assignment vector, the community assignme
 \subsubsection{What is the difference in complexity between the $SBM_n(\vec z, B)$ and $RDPG_n(X)$?}
 \label{sec:ch5:ier:rdpg_sbm}
 
-It is rather trivial to conclude that $RDPG_n(X)$ are more complex than $ER_n(p)$ random networks. Choose $X$ to be a matrix with $n$ rows and $1$ column, where every entry is $\sqrt p$). However, it is not at all obvious the relationship between the $SBM_n(\vec z, B)$ random networks and a $RDPG_n(X)$. 
+$RDPG_n(X)$ is a trivially more complex class of random networks than $ER_n(p)$. Choose $X$ to be a matrix with $n$ rows and $1$ column, where every entry is $\sqrt p$). However, the complexity relationship between the $SBM_n(\vec z, B)$ random networks and a $RDPG_n(X)$ is not as obvious. 
 
 When the number of communities is less than the number of nodes, the street example that we gave in Section \ref{sec:ch5:rdpg} is sufficient to prove that $RDPG_n(X)$ is not a special case of $SBM_n(\vec z, B)$ with $K < n$; that is, there are $RDPG_n(X)$ random networks that are not $SBM_n(\vec z, B)$ random networks. The street example cannot be captured with an SBM unless we take the number of communities equal to the number of nodes. You will better understand why this is the case in Section \ref{sec:ch5:psd_block:same_lp}.
 
-Notice, on the other hand, that if we are given a probability matrix $P$, that if there exists a matrix $X$ where $P = XX^\top$, that we could build an $RDPG_n(X)$ random network by using the matrix $X$ as the latent position matrix. This condition is equivalent to stating that $P$ must be positive semi-definite \cite{Athreya2017Jan,Rubin2022Sep}.
+Notice, on the other hand, that if we are given a probability matrix $P$, and if there exists a matrix $X$ where $P = XX^\top$, that we could build an $RDPG_n(X)$ random network by using the matrix $X$ as the latent position matrix. This condition is equivalent to stating that $P$ must be positive semi-definite \cite{Athreya2017Jan,Rubin2022Sep}.
 
 In the case of an $SBM_n(\vec z, B)$ random network, the probability matrix $P = CBC^\top$ will be positive semi-definite whenever $B$ is positive semi-definite \cite{Chung2021Mar,Athreya2017Jan}. This would mean that $B$ can be written as the product of a matrix $\sqrt B$ and its transpose $\sqrt B^\top$. In this case, if we took the latent position matrix $X$ to be $C\sqrt B$, we would get that:
 \begin{align*}
     XX^\top &= C\sqrt B\sqrt B^\top C^\top \numberthis\label{eq:ch5:ier:sbm_rdpg}\\
     &= CBC^\top,
 \end{align*}
-which is the probability matrix of a $SBM_n(\vec z, B)$ random network. This shows that if every SBM with a block matrix that positive semi-definite can be transformed to an RDPG, so the $RDPG_n(X)$ is more complex than the $SBM_n(\vec z, B)$ with a positive semi-definite block matrix and a number of communities less than the number of nodes. 
+which is the probability matrix of a $SBM_n(\vec z, B)$ random network. This shows that every SBM with a positive semi-definite block matrix can be transformed into an RDPG. Thus the $RDPG_n(X)$ is more complex than the $SBM_n(\vec z, B)$ with a positive semi-definite block matrix and a number of communities less than the number of nodes. 
 
-Unfortunately, going into too much more mathematical depth about the concept of positive semi-definiteness would get overly mathematical, so we will leave you with some practical guidance on a several types of block matrices that are positive semi-definite in Section \ref{sec:ch5:psd_block}. If you want more technical depth on positive semi-definite matrices, we would recommend a matrix analysis book, like \cite{Horn2012Oct}. To check a given block matrix \texttt{B} for positive semi-definiteness, you can use this utility, which builds upon concepts from \cite{Horn2012Oct}:
+Going into too much more depth about the concept of positive semi-definiteness would get outside this book's scope, so we will leave you with some practical guidance on several types of positive semi-definite block matrices in Section \ref{sec:ch5:psd_block}. If you want more technical depth, we would recommend a matrix analysis book like \cite{Horn2012Oct}. 
+
+To check if a given block matrix \texttt{B} is positive semi-definite, you can use this utility, which builds upon concepts from \cite{Horn2012Oct}:
 
 \begin{lstlisting}[style=python]
-def block_mtx_psd(B):
+def is_psd(B):
     """
     A function which indicates whether a block matrix
     B is positive semi-definite.
     """
     return np.all(np.linalg.eigvals(B) >= 0)
-block_mtx_psd(B)
+is_psd(B)
 # True
 \end{lstlisting}
 
 Consequently, this will tell you whether your $SBM_n(\vec z, B)$ random network can be described by an $RDPG_n(X)$ random network.
 
-\paragraph{Is there a more general RDPG where we don't need this ``positive semi-definite'' restriction?}
+\paragraph{A more general RDPG}
 \label{sec:ch5:ier:grdpg}
-The answer to this question is yes, there is a generalization of an RDPG where all stochastic block models can be captured: the aptly-named Generalized Random Dot Product Graph \cite{Rubin2022Sep}, or gRDPG. This generalization allows you to capture block matrices which are not positive semi-definite, also known as indefinite. This model underlies the theoretical motivation for many techniques that we will describe in Chapter \ref{sec:ch6}. The technical and theoretical details of these types of RDPGs are beyond the scope of this book, although some statistical formalization is provided in Appendix \ref{app:ch12:rdpg}.
+The aptly-named Generalized Random Dot Product Graph \cite{Rubin2022Sep}, or gRDPG, allows you to capture block matrices which are not positive semi-definite, also known as indefinite. This model underlies the theoretical motivation for many techniques that we will describe in Chapter \ref{sec:ch6}. The technical and theoretical details of these types of RDPGs are beyond the scope of this book, although some statistical formalization is provided in Appendix \ref{app:ch12:rdpg}.
 
 \subsubsection{The hierarchy of independent-edge random network models}
 

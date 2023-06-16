@@ -27,10 +27,10 @@ n = 200  # total number of nodes
 # first two communities are the ``core'' pages for statistics
 # and computer science, and second two are the ``peripheral'' pages
 # for statistics and computer science.
-B = np.array([[.4, .3, .05, .05][.3, .4, .05, .05][.05, .05, .05, .02][.05, .05, .02, .05]])
+B = np.array([[.4, .3, .05, .05],[.3, .4, .05, .05],[.05, .05, .05, .02],[.05, .05, .02, .05]])
 
 # make your stochastic block model
-A, labels = sbm([n // 4, n // 4, n // 4, n // 4], B)
+A, labels = sbm([n // 4, n // 4, n // 4, n // 4], B, return_labels=True)
 # generate labels for core/periphery
 co_per_labels = ["Core" for i in range(n // 2)] + ["Periphery" for i in range(n // 2)]
 # generate labels for statistics/CS
@@ -146,6 +146,8 @@ The matrix that is spectrally embedded through \texttt{case} is a linear combina
 The weight $\alpha$ is a hyper-parameter to the \texttt{case} technique, in that it is a parameter that we will often want to select with respect to a downstream task of interest. 
 
 \begin{lstlisting}[style=python]
+from graspologic.embed import AdjacencySpectralEmbed
+
 def case(A, Y, weight=0, d=2, tau=0):
     """
     A function for performing case.
@@ -153,7 +155,7 @@ def case(A, Y, weight=0, d=2, tau=0):
     # compute the laplacian
     L = to_laplacian(A, form="R-DAD", regularizer=tau)
     YYt = Y @ Y.T
-    return spectral_embed(L + weight*YYt, d=d)
+    return AdjacencySpectralEmbed(n_components=2)(L + weight*YYt)
 
 embedded = case(A, Y, weight=.002)
 \end{lstlisting}
