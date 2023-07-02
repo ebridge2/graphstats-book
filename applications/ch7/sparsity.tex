@@ -120,7 +120,7 @@ Note that in the above code, we normalized the number of potential edges by a fa
 \begin{lstlisting}[style=python]
 sns.lineplot(data=df, x="#Nodes", y="Count", hue="Edges")
 \end{lstlisting}
-The result is shown in Figure \ref{fig:ch7:density:sparsity}(A). Note that the number of potential edges is growing exponentially (dashed line), but the number of expected edges (solid line) looks like it is only growing linearly with the number of nodes. For instance, if we were to choose a value $\epsilon = 0.0064$, we could look at the plot, and go to around $n_\epsilon = 1000$ nodes where the number of potential edges is around $500000$ and the number of expected edges is around $n_\epsilon = 3200$ (the vertical, faint gray line). If we take any $n \geq n_{\epsilon}$, it will be the case that the number of expected edges is less than $\epsilon\cdot$ the number of potential edges. We could repeat this process for any choice of $\epsilon$, however small (noting that we might have to make our simulation a lot higher number of nodes for really small values of $\epsilon$).
+The result is shown in Figure \ref{fig:ch7:density:sparsity}(A). Note that the number of potential edges is growing exponentially with the number of nodes (dashed line), but the number of expected edges (solid line) looks like it is only growing linearly. For instance, if we were to choose a value $\epsilon = 0.0064$, we could look at the plot, and go to around $n_\epsilon = 1000$ nodes where the number of potential edges is around $500000$ and the number of expected edges is around $n_\epsilon = 3200$ (the vertical, faint gray line). If we take any $n \geq n_{\epsilon}$, it will be the case that the number of expected edges is less than $\epsilon\cdot$ the number of potential edges. We could repeat this process for any choice of $\epsilon$, however small (noting that we might have to make our simulation have a much higher number of nodes for really small values of $\epsilon$).
 
 \begin{figure}
     \centering
@@ -133,15 +133,15 @@ The result is shown in Figure \ref{fig:ch7:density:sparsity}(A). Note that the n
 
 Let's assume that we are given a value $\epsilon > 0$, and the $n_\epsilon$ such that the Equation \eqref{eqn:ch7:density:def1_condition} holds for all $n \geq n_\epsilon$.
 
-Dividing through by $\binom n 2$ we see that for this $\epsilon$ and $n_\epsilon$ pair, that it is also the case that for all $n \geq n_\epsilon$:
+Dividing through by $\binom n 2$ we see that for this $\epsilon$ and $n_\epsilon$ pair, that it is also true that for all $n \geq n_\epsilon$:
 \begin{align*}
     \mathbb E\left[density\left(\mathbf A^{(n)}\right)\right] &= \frac{\mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right]}{\binom n 2} \leq \epsilon,\numberthis\label{eqn:ch7:sparse:density}
 \end{align*}
-where we simply used the definition of the expected density from Section \ref{sec:ch5:prop:rndens}. This shows that another equivalent characterization of sparse networks is that:
+where we simply used the definition of the expected density from Section \ref{sec:ch5:prop:rndens}. This shows that another equivalent characterization of sparse networks is:
 \begin{align*}
     \mathbb E\left[density\left(\mathbf A^{(n)}\right)\right] &= \smallO(1).
 \end{align*}
-or that, ``the expected density is decreasing to $0$ as the number of nodes grows''. 
+or that ``the expected density is decreasing to $0$ as the number of nodes grows''. 
 
 We can repeat this with our experimental data by simply dividing the number of expected edges by the number of potential edges (adjusting for the normalization we made), like so:
 \begin{lstlisting}[style=python]
@@ -177,20 +177,20 @@ In the plot in Figure \ref{fig:ch7:density:sparsity}(C), we can see a diagonal l
 In total, we have three identical characterizations of \textit{sparse networks}:
 \begin{enumerate}
     \item The expected number of edges grows slower than the number of potential edges: $\mathbb E\left[\sum_{j > i}\mathbf a_{ij}^{(n)}\right] = \smallO\left(\binom n 2\right)$,
-    \item The expected network density is decreasing as the number of nodes grows: $\mathbb E\left[density\left(\mathbf A^{(n)}\right)\right] = \smallO(1)$, and
+    \item The expected network density decreases as the number of nodes grows: $\mathbb E\left[density\left(\mathbf A^{(n)}\right)\right] = \smallO(1)$, and
     \item The expected average degree grows slower than the number of nodes in the network: $\mathbb E[\mathbf d^{(n)}] = \smallO(n)$
 \end{enumerate}
 Note that all of these three definitions mean the exact same thing and are equivalent.
 
 \begin{floatingbox}[h]\caption{Concept: Ultrasparse networks}
-A further class of sparse networks, the \textit{ultrasparse} networks, is a collection of networks where $\mathbb E[\mathbf d^{(n)}]= \mathcal O(1)$. What this means is that ``the expected average degree is constant'', so the nodes in the network will have an average degree that does not grow as more nodes are added to the network. 
+A further class of sparse networks, the \textit{ultrasparse} networks, is a collection of networks where $\mathbb E[\mathbf d^{(n)}]= \mathcal O(1)$. This means that ``the expected average degree is constant'', so the nodes in the network will have an average degree that does not grow as more nodes are added to the network. 
 
-Note that the networks that we generate above do not appear to be ultrasparse, because the expected average node degree is growing (albeit, slower than the number of nodes is increasing). To determine whether it is leveling off to a constant, or just leveling off (but still growing to infinity as $n \rightarrow \infty$) would take a background in real analysis.
+Note that the networks that we generate above do not appear to be ultrasparse, because the expected average node degree is growing (albeit, slower than the number of nodes is increasing). To determine whether it is leveling off to some finite number, or just leveling off (but still growing to infinity as $n \rightarrow \infty$) would take a background in real analysis.
 \end{floatingbox}
 
 \subsection{Data wrangling and matrix sparsity}
 
-In addition to network sparsity a substantial nuisance when running many standard network learning techniques, matrix sparsity plays a big role in the data wrangling step for network data. \textit{Data wrangling} refers to the process of manipulating data (your network) into a format that makes it more appropriate and valuable for your analytical purposes. An $n \times d$ matrix with non-negative entries is said to be \textit{sparse} if any of its entries are zero. On the other hand, an $n \times d$ matrix with non-negative entries is said to be \textit{dense} if none of its entries are zero.
+In addition to network sparsity being a substantial nuisance when running many standard network learning techniques, it also plays a big role in the data wrangling step for network data. \textit{Data wrangling} refers to the process of manipulating data (your network) into a format that makes it more appropriate and valuable for your analytical purposes. An $n \times d$ matrix with non-negative entries is said to be \textit{sparse} if any of its entries are zero. On the other hand, an $n \times d$ matrix with non-negative entries is said to be \textit{dense} if none of its entries are zero.
 
 We further subset these to say that a matrix is \textit{sufficiently sparse} if the matrix has enough of a fraction of the entries being zero that it makes sense to take advantage of it.
 
@@ -215,7 +215,7 @@ A plot of the network adjacency matrix is shown in Figure \ref{fig:ch7:density:d
 
 Throughout this book, we have typically encountered networks as dense adjacency matrices. This means that we stored the entire adjacency matrix (all $n \times n$ entries). When the adjacency matrix is sufficiently sparse, this can be an extremely inefficient approach to handling network data. 
 
-The network above has $n=1000$ nodes. The most naive way to store the adjacency matrix, which we do frequently in this book, is to store it as a $n \times n$ matrix, which means that we have $1000000$ entries. Each of these entries defaults to a \texttt{float64} in numpy, which is a $64$-bit number. This means that our network, in total, occupies $1000^2 \cdot 64 = 64$ million bits (Mb), or $64/8 = 8$ million bytes (MB). 
+The network above has $n=1000$ nodes. The simplest way to store the adjacency matrix, which we do frequently in this book, is as a $n \times n$ matrix, which means that we have $1000000$ entries. Each of these entries defaults to a \texttt{float64} in numpy, which is a $64$-bit number. This means that our network, in total, occupies $1000^2 \cdot 64 = 64$ million bits (Mb), or $64/8 = 8$ million bytes (MB). 
 
 However, we have a lot of redundancies here. First, the network is simple, so edges are unweighted. When the edges are unweighted, we only need a single bit to represent each number. Unfortunately, RAM on your computer is divided by bytes, so the best we could do is $1$ byte per entry using standard \texttt{python} approaches. We will cast each entry of \texttt{A} to a \texttt{uint8}, which is an $8$ bit unsigned integer. That it is unsigned simply means that the entry cannot be negative. Let's see how much space we save:
 

@@ -1,19 +1,19 @@
 \section{Getting the data}
 \label{sec:ch2:getdata}
 
-For this section, you will start to get your hands dirty with some real network datasets. Don't be afraid to walk through these examples with your laptop in a jupyter notebook. To ease your ability to interact directly with the code of this book, we've developed a standalone \texttt{docker} container that you can use. 
+In this section, you will start to get your hands dirty with some real network datasets. We recommend walking through these examples with your laptop in a jupyter notebook. To ease your ability to interact directly with the code of this book, we've developed a standalone \texttt{docker} container that you can use. 
 
 \subsection{Interacting with the book via \texttt{docker}}
 
 Getting software to run across multiple operating systems, particularly software with lots of dependencies, can range from difficult to impossible. While most of the packages required to run the contents of this book can be installed relatively easily via a combination of git, pip, and virtual environments, the easiest and fastest way to get you coding and interacting with real \texttt{python} code is \texttt{docker}. 
 
-\texttt{docker} is a containerization utility that, in effect, allows you to run standalone software in a separate area of your computer (called a {docker container}), that allows software to operate without conflicting with your local operating system. This means that you can, with a very small number of button clicks, create deployable software that thousands of people can use at the drop of a hat. It might not be better than sliced bread, but it might be the next best thing! 
+\texttt{docker} allows you to run standalone software in a separate area of your computer called a \textit{docker container} so it can allow software to operate without conflicting with your local operating system. This means that you can, with a very small number of button clicks, create deployable software that thousands of people can use at the drop of a hat. It might not be better than sliced bread, but it might be the next best thing! 
 
-We aren't going to sit here and pretend to be the experts on docker, but fortunately the people over at docker won't leave you on your own for that one! To install docker, check out their installation guide at \cite{dockerinstall}. 
+To install docker, check out their installation guide at \cite{dockerinstall}. 
 
-\subsubsection{Obtaining the docker container for the textbook}
+\subsubsection*{Obtaining the docker container for the textbook}
 
-Once you have docker installed on your computer, you can obtain the docker container for the book relatively easily. If you have a ubuntu/mac operating system and the docker daemon running on your computer, you can open up a terminal session and type the following command:
+Once you have \textt{docker} installed on your computer, you can obtain the docker container for the book relatively easily. If you have a ubuntu/mac operating system and the docker daemon running on your computer, you can open up a terminal session and type the following command:
 
 \begin{lstlisting}[style=bash]
 $ docker pull neurodata/graph-stats-book
@@ -21,7 +21,7 @@ $ docker pull neurodata/graph-stats-book
 
 which will fetch the docker container for the book from \cite{thisbookdocker}.
 
-This docker container contains all of the dependencies needed to run the code within this book, and will allow you to use the book in conjunction with \texttt{jupyter}. \texttt{jupyter} is a lightweight, web-based interactive computing platform that you can access through your web browser at \texttt{localhost:<port>}, where \texttt{<port>} is the port you provide to the container for execution. You can start the docker container like this:
+This docker container contains all of the dependencies needed to run the code within this book, and will allow you to use the book in conjunction with \texttt{jupyter}, a lightweight, web-based interactive computing platform that you can access through your web browser at \texttt{localhost:<port>}, where \texttt{<port>} is the port you provide to the container for execution. You can start the docker container like this:
 
 % \begin{lstlisting}[style=bash]
 % $ docker run -it --rm -p <port>:8888 neurodata/graph-stats-book \
@@ -35,15 +35,15 @@ docker run -it -v <path/to/local/working/directory>:/home/book -p 8888:8888 neur
     --NotebookApp.token="graphbook"
 \end{lstlisting}
 
-Which will launch a \texttt{jupyter-lab} session, and {should} automatically log you into the session in your browser. If it does not, open up a browser of your choice, and go to \texttt{localhost:<port>}, where you will be prompted to enter the log-in password for your session- that login-in password is \texttt{graphbook}, generated from \texttt{--NotebookApp.token} in the command above. If you don't know what port to choose, it's probably easiest to try \texttt{8888}, and if that doesn't work, \texttt{8889}, and keep working up until you find an open port. The port is so that your browser can communicate with the jupyter session inside the docker container (which runs jupyter internally on port \texttt{8888}), and so you are basically telling your computer that your port \texttt{<port>} should "tie in" to port \texttt{8888} in the docker container.
+This will launch a \texttt{jupyter-lab} session, and {should} automatically log you into the session in your browser. If it does not, open up a browser of your choice, and go to \texttt{localhost:<port>}, where you will be prompted to enter the log-in password for your session- that login-in password is \texttt{graphbook}, generated from \texttt{--NotebookApp.token} in the command above. If you don't know what port to choose, it's probably easiest to try \texttt{8888}, and if that doesn't work, \texttt{8889}, and keep working up until you find an open port. The port is so that your browser can communicate with the jupyter session inside the docker container (which runs jupyter internally on port \texttt{8888}).
 
 If you don't want to use the docker container, that's fine too: you can follow the instructions at the end in Section \ref{sec:ch2:get:install} for more details. 
 
 \subsection{Downloading the data}
 
-When you work with network data, it is rarely the case that the {raw data} that you will use is already a network. The \textit{raw data} is the least processed version of the data for your project, and is the information upon which the rest of your data is {derived}. A \textit{derivative} is a piece of data or information that is {derived} from the raw data. Consider, for instance, that you are investigating emailing trends for a company, and trying to see whether employees tend to email their team members more or less frequently than people outside of their team. In this case, your raw data might be a list of emails, coupled with the sender, and the recipient, of each email. You might be responsible for {preprocessing} this data to acquire a network derivative for your later analyses.
+When you work with network data, it is rarely the case that the {raw data} that you will use is already a network. The \textit{raw data} is the least processed version of the data for your project, and is the information upon which the rest of your data is {derived}. A \textit{derivative} is a piece of data or information that is {derived} from the raw data. For us, the raw data are the brain scans. These brain scans were preprocessed by breaking the scans into brain regions, and then finding blood-flow correlation between those regions.
 
-In this section, you won't worry just yet about preprocessing a raw dataset, and will instead start with some pre-prepared data. You will be working with brain networks from a human functional MRI connectome. You could navigate over to the \texttt{neurodata} website and download the file directly, but it tends to be useful to get used to how to do this programmatically. This is because if the data changes, you might want your analysis to automatically update and pertain to the latest and best version of the data at the time you execute your function. Further, if you intend your code to be reproducible, having a function which downloads and prepares the data in a way which the computer can use will simplify the process of disseminating your work. 
+We have access to that preprocessed dat. (This is real data, by the way!) You could navigate over to the \texttt{neurodata} website and download this data directly, but it tends to be useful to do this programmatically, because if the data changes, you might want your analysis to automatically use the latest and best version of the data at the time you execute your function. Further, if you intend your code to be reproducible, having a function which downloads and prepares the data in a way which the computer can use will simplify the process of disseminating your work. 
 
 To begin, we'll start with a code snippet which fetches the required data for our analysis:
 
@@ -97,7 +97,7 @@ def read_fmri_data(path=FMRI_PATH):
     return np.stack(networks, axis=0)
 \end{lstlisting}
 
-Now when you call \texttt{fetch\_fmri\_data()}, it creates a new directory called \texttt{datasets/fmri} in your workspace, and downloads the adjacency matrices, the standard way to represent a graph as a mathematical object, into your local directory \texttt{datasets/fmri}.
+Now when you call \texttt{fetch\_fmri\_data()}, it creates a new directory called \texttt{datasets/fmri} in your workspace, and downloads the adjacency matrices, the standard way to represent a graph as a mathematical object (see \ref{sec:ch4:mtx-rep}), into your local directory \texttt{datasets/fmri}.
 
 Next, we'll try to load the dataset using the \texttt{graspologic} utility, \texttt{import\_edgelist()}:
 
@@ -115,7 +115,7 @@ A = As[0]
 ax = heatmap(A, vmin=0, vmax=1, title="Heatmap of Functional Connectome")
 \end{lstlisting}
 
-What this has done is it has plotted the adjacency matrix for the functional connectome of a human. The nodes of this network are numbered in sequential order. A heatmap is a network visualization in which the $x$ and $y$ coordinates of a given entry in the matrix indicate the pair of nodes an edge is connected to, and the color for the $(x,y)$ point in the figure indicates the weight of the edge between nodes $x$ and $y$. The edge weight is stronger if the pair of brain areas are active together more, and lower if the pair of brain areas tend to be active together less. This is real data, generated from actual fMRI scans!
+This has plotted the adjacency matrix for the functional connectome of a human. The nodes of this network are numbered sequentially. A heatmap is a network visualization in which the $x$ and $y$ coordinates of a given entry in the matrix indicate the pair of nodes an edge is connected to, and the color for the $(x,y)$ point in the figure indicates the weight of the edge between nodes $x$ and $y$. The edge weight is stronger if the pair of brain areas are active together more, and lower if the pair of brain areas are less active together. This is real data, generated from actual fMRI scans!
 
 One thing that we can notice from this plot is that a lot of these edges have tiny weights. Let's explore this a little bit further. 
 
@@ -140,11 +140,11 @@ A plot of the adjacency matrix's edge weights is shown in Figure \ref{fig:ch2:ra
 
 \subsection{Create the workspace}
 \label{sec:ch2:get:install}
-\subsubsection{Installing the latest version of \texttt{python}}
+\subsubsection*{Installing the latest version of \texttt{python}}
 
-To begin, you will need a suitable instance of \texttt{python} installed. For this book, we'll use \texttt{python 3.8}, but the most advanced version of \texttt{python3} at the time you are reading should do the trick. We will assume that you are using a Linux or UNIX-like operating system, such as OSX. If you have a Windows computer, we would recommend that you use the Docker container or the Linux subsystem module, which you can find more details about in \cite{windowsss} to interact with the codebase. Once you have this set up and up and running, you can follow the instructions below for a Debian distribution of Linux.
+You will need a suitable instance of \texttt{python} installed. For this book, we use \texttt{python 3.8}, but the most advanced version of \texttt{python3} at the time you are reading should do the trick. We assume that you are using a Linux or UNIX-like operating system, such as OSX. If you have a Windows computer, we recommend that you use the Docker container or the Linux subsystem module, which you can find more details about in \cite{windowsss}. Once you have this set up and up and running, you can follow the instructions below for a Debian distribution of Linux.
 
-Once you have your computer handy, you can run the following command, which should show (ideally) \texttt{python3} has a version $\geq$\texttt{3.8.0}:
+First, you can run the following command, which should show (ideally) \texttt{python3} has a version $\geq$\texttt{3.8.0}:
 
 \begin{lstlisting}[style=bash]
 $ python3 -V
@@ -187,9 +187,9 @@ Successfully installed pip-22.0.3
 
 You now have \texttt{python3}, the \texttt{python} package manager \texttt{pip}, and the \texttt{python3} developer libraries installed on your computer. 
 
-\subsubsection{Installing fortran}
+\subsubsection*{Installing fortran}
 
-Some of the packages that you will use in the book require the system to have an appropriate version of a programming language called FORTRAN installed. FORTRAN is a numerical programming language which is very fast for mathematical computations. Fortran is included in the package \texttt{gcc}, which is a collection of compilers for many programming languages.
+Some of the packages that you will use in the book require the system to have an appropriate version of \textt{FORTRAN} installed. FORTRAN is a numerical programming language which is very fast for mathematical computations. \textt{FORTRAN} is included in the package \texttt{gcc}, a collection of compilers for many programming languages.
 
 If you have a MAC system, you can install \texttt{gfortran} with the following command:
 
@@ -211,9 +211,9 @@ $ sudo yum update
 $ sudo yum install gcc
 \end{lstlisting}
 
-\subsubsection{Establishing a virtual environment}
+\subsubsection*{Establishing a virtual environment}
 
-It is often good practice in \texttt{python} to avoid installing many packages directly to \texttt{python3} itself. This is because packages in \texttt{python} do not necessarily have the same dependencies, and particular projects might require package versions that conflict with other projects you are working on. For instance, I might have a homework assignment that works only with numpy version 1.18.1, but meanwhile, a work project needs numpy version 1.22.0. For this reason, you strongly encourage you to use virtual environments.
+It is often good practice in \texttt{python} to avoid installing many packages directly to \texttt{python3} itself. This is because packages in \texttt{python} do not necessarily have the same dependencies, and particular projects might require package versions that conflict with other projects you are working on. For instance, you might have a homework assignment that works only with numpy version 1.18.1, but meanwhile, a work project needs numpy version 1.22.0. For this reason, we strongly encourage you to use virtual environments.
 
 To begin working with virtual environments in python, you will need to first obtain the \texttt{virtualenv} package:
 
@@ -224,7 +224,7 @@ Collecting package virtualenv
 Successfully installed virtualenv-20.13.1
 \end{lstlisting}
 
-Once you have \texttt{virtualenv} installed, you can create your first virtual environment in python. You will first make a directory in your home directory which will allow us to keep track of your virtual environments, and then you will make a new virtual environment for the book which uses \texttt{python3}:
+Once you have \texttt{virtualenv} installed, you can create your first virtual environment in python. Make a directory in your home directory which will allow us to keep track of your virtual environments, and then make a new virtual environment for the book which uses \texttt{python3}:
 
 \begin{lstlisting}[style=bash]
 $ # create a new directory for virtual environments
@@ -233,7 +233,7 @@ $ # make a new virtual environment using python3
 $ virtualenv -p python3 ~/.virtualenvs/graph-book
 \end{lstlisting}
 
-Every time you want to use run code for the book, you should first use the following command to activate the virtual environment:
+Every time you want to run code for the book, you should first use the following command to activate the virtual environment:
 
 \begin{lstlisting}[style=bash]
 $ # activate the virtual env
@@ -241,31 +241,31 @@ $ source ~/.virtualenv/bin/activate
 (graph-book) $ 
 \end{lstlisting}
 
-You should run this command before continuing to the next section.
+Run this command before continuing to the next section.
 
-\subsubsection{Installing the dependencies for the book}
+\subsubsection*{Installing the dependencies for the book}
 
-Next, you need to install the \texttt{python} package dependencies for the book. Once you have your virtual environment activated, you will next want to grab the requirements file for the graph book, which can be obtained by typing:
+Next, you need to install the \texttt{python} package dependencies for the book. Once you have your virtual environment activated, grab the requirements file for the graph book by typing:
 
 
 \begin{lstlisting}[style=bash]
 (graph-book) $ wget https://raw.githubusercontent.com/neurodata/graph-stats-book/master/requirements.txt
 \end{lstlisting}
 
-Next, you will want to install the appropriate \texttt{python} packages specified in the \texttt{requirements.txt} file, by typing:
+Next, install the appropriate \texttt{python} packages specified in the \texttt{requirements.txt} file, by typing:
 
 \begin{lstlisting}[style=bash]
 (graph-book) $ pip install -r requirements.txt
 \end{lstlisting}
 
-Since you are in a virtual environment, you no longer have to worry about making sure you are installing these to \texttt{python3} or \texttt{pip3}, since the virtual environment streamlines all of these function calls for us directly. Finally, you will need to install \texttt{jupyter-lab} and the ipython kernel, using the following commands:
+Since you are in a virtual environment, you no longer have to worry about making sure you are installing these to \texttt{python3} or \texttt{pip3}. The virtual environment streamlines all of these function calls for us directly. Finally, you will need to install \texttt{jupyter-lab} and the ipython kernel, using the following commands:
 
 
 \begin{lstlisting}[style=bash]
 (graph-book) $ pip install jupyterlab ipykernel
 \end{lstlisting}
 
-We need to add your virtual environment to the ipython kernel so that jupyter lab can find it, which you can do by typing:
+Add your virtual environment to the ipython kernel so that jupyter lab can find it, which you can do by typing:
 
 
 \begin{lstlisting}[style=bash]
@@ -275,7 +275,7 @@ Installed kernelspec myenv in /home/<user>/.local/share/jupyter/kernels/graph-bo
 
 This will ensure that packages you install to the \texttt{graph-book} virtual environment will be findable from within jupyter.
 
-\subsubsection{Setting up jupyter notebook}
+\subsubsection*{Setting up jupyter notebook}
 
 Now that you have all your packages installed, you can finally move to starting up a notebook. Let's begin by first launching jupyter lab:
 
@@ -284,18 +284,18 @@ Now that you have all your packages installed, you can finally move to starting 
 
 \end{lstlisting}
 
-Next, you want to create a new notebook using the \texttt{graph-book} module.
+Next, create a new notebook using the \texttt{graph-book} module.
 
-To verify that your notebook has the proper software installed, you will make a code cell which simply imports the \texttt{graspologic} package, by typing the following command in the top cell:
+To verify that your notebook has the proper software installed, make a code cell which imports the \texttt{graspologic} package, by typing the following command in the top cell:
 
 \begin{lstlisting}[style=bash]
 import graspologic
 graspologic.__version__
 \end{lstlisting}
 
-and then pressing the \texttt{Shift} and \texttt{Enter} keys simultaneously. Note that this cell will take a few seconds to execute successfully.
+and then pressing the \texttt{Shift} and \texttt{Enter} keys simultaneously. This cell will take a few seconds to execute successfully.
 
 
-From this point forward, for each section of the book, you should be able to copy and paste code snippets section by section, and successfully reproduce the executable code contained within the book. You should take care to make sure that if you take this approach that you make sure to copy and paste all code that appears in the section, since there may be modules which are imported in above cells that are assumed to have been imported in later cells.
+From this point forward, for each section of the book, you should be able to copy and paste code snippets section by section, and successfully reproduce the executable code contained within the book. If you take this approach, copy and paste all code that appears in the section, since there may be modules which are assumed to have been imported in later cells.
 
 \newpage

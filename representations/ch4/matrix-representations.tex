@@ -1,19 +1,29 @@
 \section{Matrix representations of networks}
 \label{sec:ch4:mtx-rep}
 
-When we work with networks, we need a way to represent them mathematically and in our code. A network itself lives in network space, which is just the set of all possible networks. Network space is kind of abstract and inconvenient if we want to use traditional mathematics, so we'd generally like to represent networks with groups of numbers to make everything more concrete.
+A network itself lives in network space, which is the set of all possible networks. Network space is kind of abstract and inconvenient if we want to use traditional mathematics, so we'd generally like to represent networks with groups of numbers to make everything more concrete.
 
-More specifically, we would often like to represent networks with \emph{matrices}. In addition to being computationally convenient, using matrices to represent networks lets us bring in a surprising amount of tools from linear algebra and statistics. Programmatically, using matrices also lets us use common \texttt{python} tools for array manipulation like \texttt{numpy}.
+We generally represent networks with matrices. In addition to being computationally convenient, using matrices to represent networks lets us bring in a tools from linear algebra and statistics. Programmatically, using matrices also lets us use common \texttt{python} tools for array manipulation like \texttt{numpy}.
 
-For this section, we just wanted to get you acquainted with matrix representations of networks. This section will tie in directly with Section \ref{sec:ch4:prop-net}, so be aware that many of these concepts will be addressed in much more depth as the book progresses.
+In \ref{alg:ch2} we used a common matrix representation of a network called the Adjacency Matrix. We will begin with that.
 
-A common matrix representation of a network is called the Adjacency Matrix, and we'll learn about that first.
+After that, we will explore the atom and then twin of the adjacency matrix: the degree matrix and the Laplacian matrix. We'll explore different types of Laplacians before moving on.
 
 \subsection{Adjacency Matrices}
 
-Throughout this book, the beating heart of matrix representations of networks that we will see is the adjacency matrix \cite{Godsil}. The idea is pretty straightforward: Let's say we have a network with $n$ nodes. We give each node an index (usually some value between $1$ and $n$, with one value per node) and then we create an $n \times n$ matrix. If there is an edge between node $i$ and node $j$, we fill the $(i, j)^{th}$ and $(j, i)^{th}$ values of the matrix with an entry, usually $1$ if our network has unweighted edges. In the case of undirected networks, we end up with a symmetric matrix with full of $1$s and $0$s, which completely represents the topology of our network.
+Adjacency matrices \cite{Godsil} are the beating heart of matrix representations of networks, and are the representation we will see the most throughout this book. Most other matrix representations that we see can either be derived from adjacency matrices, or are isomorphic to them. They work as follows: Let's say we have a network with $n$ nodes. We give each node an index (usually some value between $1$ and $n$, with one value per node) and then we create an $n \times n$ matrix. If there is an edge between node $i$ and node $j$, we fill the $(i, j)^{th}$ and $(j, i)^{th}$ values of the matrix with an entry, usually $1$ if our network has unweighted edges. In the case of undirected networks, we end up with a symmetric matrix with full of $1$s and $0$s, which completely represents the topology of our network.
 
-Let's see this in action. We'll make a network with only three nodes, since that's small and easy to understand, and then we'll show what it looks like as an adjacency matrix. To visualize this network, we'll use something called a layout plot, provided by \texttt{nx.draw\_network()}.
+The adjacency matrix looks like this:
+
+\begin{align*}
+    A &= \begin{bmatrix}
+        a_{11} & ... & a_{1n} \\
+        \vdots & \ddots & \vdots \\
+        a_{n1} & ... & a_{nn}
+    \end{bmatrix},
+\end{align*}
+
+Let's see this in action. We'll make a small, simple network with only three nodes, and then we'll see what it looks like as an adjacency matrix. To visualize this network, we'll use a layout plot, provided by \texttt{nx.draw\_network()}.
 
 \begin{lstlisting}[style=python]
 import numpy as np
@@ -43,7 +53,7 @@ The resulting plot of the network is shown in Figure \ref{fig:ch4:basic_mtxs}(A)
 
 So, let's fill out the matrix. We start with the first row, which corresponds to the first node, and move along the columns. If there is an edge between the first node and the node whose index matches the current column, put a $1$ in the current location. If the two nodes aren't connected, add a $0$. When you're done with the first row, move on to the second. Keep going until the whole matrix is filled with $0$'s and $1$'s. 
 
-Since the second and third nodes aren't connected, there is a $0$ in locations $a_{2, 1}$ and $a_{1, 2}$. There are also zeroes along the diagonals, since nodes don't have edges with themselves. In the plot, please take note of how we plotted the adjacency matrix using \texttt{heatmap()}; we won't always show you how to make this plot in the future. 
+Since the second and third nodes aren't connected, there is a $0$ in locations $a_{2, 1}$ and $a_{1, 2}$. There are also zeroes along the diagonals, since nodes don't have edges with themselves. Here we plotted the adjacency matrix using \texttt{heatmap()}; we won't always show this plot in the future. 
 
 \begin{lstlisting}[style=python]
 from graphbook_code import heatmap
@@ -61,7 +71,7 @@ heatmap(A, annot=True, linewidths=.1, cbar=False,
 
 \end{lstlisting}
 
-The resulting adjacency matrix is shown in Figure \ref{fig:ch4:basic_mtxs}(B). Although the adjacency matrix is straightforward and easy to understand, it isn't the only way to represent networks with matrices.
+The resulting adjacency matrix is shown in Figure \ref{fig:ch4:basic_mtxs}(B).
 
 \begin{figure}[h]
     \centering
@@ -72,7 +82,9 @@ The resulting adjacency matrix is shown in Figure \ref{fig:ch4:basic_mtxs}(B). A
 
 \subsection{The degree matrix}
 
-The degree matrix isn't a full representation of our network, because we wouldn't be able to reconstruct an entire network from a degree matrix. However, it's fairly straightforward and it pops up relatively often as a step in creating other matrices, so the degree matrix is useful to mention. It's just a diagonal matrix with the values along the diagonal corresponding to the number of each edges each node has, also known as the \textit{degree} of each node. We'll learn more about the degree matrix in Section \ref{sec:ch4:prop-net}.
+Networks have a number of properties: edge count, number of nodes, average node connectivity, and so forth. The \emph{degree} of a node is one such property. It is simply the number of nodes that node is connected to.
+
+The degree matrix takes this a step further, and acts to represent the degree of every node in the network. It doesn't completely describe our network, because we wouldn't be able to create an adjacency matrix just from a degree matrix -- we only know the number of connections, not which nodes are connected to each other. However, it pops up relatively often as a step in creating other matrices, so the degree matrix is useful to mention as its own entity. It is just a diagonal matrix with the values along the diagonal corresponding to the number of each edges each node has, also known as the \textit{degree} of each node. We'll learn more about the degree matrix in Section \ref{sec:ch4:prop-net}.
 
 We can see the degree matrix for our network below. The diagonal element corresponding to node $1$ has the value of two, since it has two edges; the rest of the nodes have a value of $1$, since they each are only connected to the first node.
 
@@ -92,7 +104,11 @@ The degree matrix is shown in Figure \ref{fig:ch4:simple_lap}.
 
 \subsection{The Laplacian Matrix}
 
-The standard, cookie-cutter Laplacian Matrix $L$ \cite{Chung1996Dec} is just the adjacency matrix $A$ subtracted from the the degree matrix $D$:
+The Laplacian Matrix is a direct derivative of the Adjacency Matrix. It is used in practice because it has a number of interesting mathematical properties which tend to be useful for analysis. For instance, the magnitude of its second-smallest eigenvalue, called the Fiedler eigenvalue, tells us how well-connected our network is -- the number of eigenvalues equal to zero is the number of connected components our network has (a concept you will be introduced to in Section \ref{sec:ch4:prop-net:lcc}). Incidentally, this means that the smallest eigenvalue of the Laplacian will always be 0, since any simple network always has at least one ``island''.
+
+Another interesting property of the Laplacian is that the sum of its diagonals is twice the number of edges in the network. Because the sum of the diagonal matrix is the trace, and the trace is also equal to the sum of the eigenvalues, this means that the sum of the eigenvalues of the Laplacian is equal to twice the number of edges in the network.
+
+The standard Laplacian Matrix $L$ \cite{Chung1996Dec} is just the adjacency matrix $A$ subtracted from the the degree matrix $D$:
 
 \begin{align*}
  L = D - A
@@ -114,11 +130,7 @@ A plot of the Laplacian matrix as a heatmap, along with the degree and adjacency
     \label{fig:ch4:simple_lap}
 \end{figure}
 
-We use the Laplacian in practice because it has a number of interesting mathematical properties which tend to be useful for analysis. For instance, the magnitude of its second-smallest eigenvalue, called the Fiedler eigenvalue, tells us how well-connected our network is -- the number of eigenvalues equal to zero is the number of connected components our network has (a concept you will be introduced to in Section \ref{sec:ch4:prop-net:lcc}). Incidentally, this means that the smallest eigenvalue of the Laplacian will always be 0, since any simple network always has at least one ``island''. We don't need to have too much intuition for what eigenvalues mean, but just be aware that they will matter somewhat later on for now.
-
-Another interesting property of the Laplacian is that the sum of its diagonals is twice the number of edges in the network. Because the sum of the diagonal matrix is the trace, and the trace is also equal to the sum of the eigenvalues, this means that the sum of the eigenvalues of the Laplacian is equal to twice the number of edges in the network.
-
-Laplacians and adjacency matrices will be used throughout this book, and details about when and where one or the other will be used are in Chapter \ref{sec:ch6}.
+Laplacians and adjacency matrices will be used throughout this book. More details are in Chapter \ref{sec:ch6}.
 
 \subsection{The Normalized Laplacian}
 \label{sec:ch4:mat-rep:normlapl}
@@ -141,7 +153,7 @@ A heatmap of the normalized Laplacian is shown in Figure \ref{fig:ch4:normlapl}(
 
 We can understand the normalized Laplacian from the name: we can think of it as the Laplacian normalized by the degrees of the nodes associated with a given entry.
 
-We can see this by looking at what the operation is doing:
+Here is what the operation is doing:
 
 \begin{align*}
     L^{norm.} &= D^{-\frac{1}{2}}L D^{-\frac{1}{2}} \\
@@ -182,7 +194,7 @@ We can see this by looking at what the operation is doing:
 \end{align*}
 So the normalized laplacian has entries $l^{norm.}_{ij} = \frac{l_{ij}}{\sqrt{d_i}\sqrt{d_j}}$.
 
-We can plug in the value of $L$ to obtain a similar relationship with the adjacency matrix $A$. Notice that:
+We can plug in the value of $L$ to obtain a similar relationship with the adjacency matrix $A$.
 \begin{align*}
     L^{norm.} &=  D^{-\frac{1}{2}}L D^{-\frac{1}{2}} \\
     &=  D^{-\frac{1}{2}}(D - A) D^{-\frac{1}{2}} \\
@@ -191,14 +203,14 @@ We can plug in the value of $L$ to obtain a similar relationship with the adjace
     &= I_{n \times n} - D^{-\frac{1}{2}}A D^{-\frac{1}{2}}
 \end{align*}
 
-The $D^{-1/2} D D^{-1/2}$ term is spiritually the same as what we'd think of $\frac{D}{D}$ (if that was defined!), since it just works out to be the identity matrix. The $D^{-1/2} A D^{-1/2}$ is just doing the same thing to $A$ that we did to $L$. So we're normalizing the entries of the adjacency matrix by the degrees of the nodes a given entry is concerned with; that is, $\frac{a_{ij}}{\sqrt{d_i}\sqrt{d_j}}$.
+You could think of the $D^{-1/2} D D^{-1/2}$ term as spiritually the same as what we'd think of $\frac{D}{D}$ (if that were not undefined!), since it just works out to be the identity matrix. The $D^{-1/2} A D^{-1/2}$ is just doing the same thing to $A$ that we did to $L$. So we're normalizing the entries of the adjacency matrix by the degrees of the nodes a given entry is concerned with; that is, $\frac{a_{ij}}{\sqrt{d_i}\sqrt{d_j}}$.
 
-One useful property of the normalized Laplacian is that its eigenvalues are bounded between 0 and 2. This normalization tends to be useful, because the Laplacian is a thing called a \emph{positive semi-definite matrix}. This means that a suite of linear algebra techniques, which may \emph{not} run successfully on the adjacency matrix (which is \emph{not} positive semi-definite in its most raw form for \emph{simple networks}, which we will learn about in the next chapter), can be executed on the network Laplacian. For more details about the properties of the Laplacian, check out \cite{Li2014Dec}.
+One useful property of the normalized Laplacian is that its eigenvalues are bounded between 0 and 2, and so the Laplacian is a \emph{positive semi-definite matrix} (as are all matrices with exclusively positive or 0 eigenvalues). This means that a suite of linear algebra techniques, which may not run successfully on the adjacency matrix (which is \emph{not} positive semi-definite in its most raw form for simple networks, which we will learn about in the next chapter), can be executed on the network Laplacian. For more details about the properties of the Laplacian, check out \cite{Li2014Dec}.
 
 \subsection{The \texttt{DAD} Laplacian}
 \label{sec:ch4:mtx-rep:dad_laplacian}
 
-In this book, a lot of what we will cover will be something called a \emph{spectral embedding} of the Laplacian. While we will learn all about this in Section \ref{sec:ch6:lse}, there are some fine points we want to cover here. As it turns out, there is another, \emph{related}, definition of a Laplacian, which we call the \texttt{DAD} Laplacian:
+In this book, a lot of what we will cover will be the \emph{spectral embedding} of the Laplacian (see Section \ref{sec:ch6:lse}). To understand the spectral embedding, we will need a related definition of a Laplacian, which we call the \texttt{DAD} Laplacian:
 
 \begin{align*}
     L^{DAD} &= D^{-\frac{1}{2}}A D^{-\frac{1}{2}}

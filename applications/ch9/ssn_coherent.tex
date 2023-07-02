@@ -65,7 +65,7 @@ Compute the ranked significance matrix $R$, which is an $n \times n$ matrix whos
 
 Initialize $c = \max_{i,j}r_{ij}$, and let $w_c = 0$.
 
-\While{w_c < K}{
+\While{$w_c < K$}{
     For each node $i$, let $w_{i, c} = \sum_{j = 1}^n \mathfrak 1\left\{r_{ij} \geq c\right\}$ to be the number of edges for node $i$ where the ranked significance is at least $c$.
 
     Rank the nodes according to which node has the number of signal edges exceeding the threshold $c$. Denote the $i^{th}$ largest node by $w_{(i),c}$. 
@@ -112,7 +112,7 @@ ssn_coherent[ssn_est_coherent.sigsub_] = 1
 
 \begin{figure}
     \centering
-    \includegraphics{applications/ch9/Images/ssn_co.png}
+    \includegraphics[width=\linewidth]{applications/ch9/Images/ssn_co.png}
     \caption[Comparing coherent and incoherent signal subnetwork estimates.]{\textbf{(A)} the true signal subnetwork, \textbf{(B)} the incoherent signal subnetwork estimate, \textbf{(C)} the coherent signal subnetwork estimate.}
     \label{fig:ch9:ssn:ssn_coh}
 \end{figure}

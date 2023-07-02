@@ -1,6 +1,6 @@
 \section{Preparing the data for network machine learning}
 \label{sec:ch2:prepare}
-Next, it's time for us to prepare our networks for machine learning algorithms. Like before, you are going to try to capture most of these with functions. This is because:
+Next, it's time for us to prepare our networks for machine learning algorithms. Like before, you are going to try to capture most of these with functions, because:
 
 \begin{enumerate}
     \item Functions will make the useful data preparation code that we write usable on new networks,
@@ -11,14 +11,14 @@ Next, it's time for us to prepare our networks for machine learning algorithms. 
 
 \subsection{Data cleaning}
 
-Most network machine learning algorithms cannot work with a node which is \emph{isolated}, a term we will learn in Chapter \ref{sec:ch4} which meaning that the node has no edges. Let's start with fixing this. We can remove isolated nodes from the network as follows:
+Most network machine learning algorithms cannot work with a node which is \emph{isolated}, meaning that the node has no edges. Let's start with fixing this. We can remove isolated nodes from the network as follows:
 \begin{enumerate}
-\item Compute the number of nodes each node connects to. This consists of summing the matrix along the rows (or columns). The network is \emph{undirected}, a property you will learn in [properties of networks](ch4:prop-net), which means that if a node can communicate with another node, that other node can also communicate with that node.
-\item Identify any nodes which are connected to zero nodes along either the rows or columns. These are the \emph{isolated} nodes.
+\item Compute the number of nodes each node connects to. This consists of summing the matrix along the rows (or columns). The network is undirected, which means that if a node can communicate with another node, that other node can also communicate with that node.
+\item Identify any nodes which are connected to zero nodes along either the rows or columns. These are the isolated nodes.
 \item Remove the isolated nodes from the adjacency matrix.
 \end{enumerate}
 
-Let's see how this works in practice. We begin by first taking the row sums of each node, which tells us how many nodes that each node is connected to. Next, we remove all nodes with are not connected to any other nodes (the row and column sum are both zero) from both the adjacency matrix and the labels:
+Let's see how this works in practice. We begin by first taking the row sums of each node, which tells us how many nodes each node is connected to. Next, we remove all nodes with are not connected to any other nodes (the row and column sum are both zero) from both the adjacency matrix and the labels:
 
 \begin{lstlisting}[style=python]
 def remove_isolates(A):
@@ -39,7 +39,7 @@ A = remove_isolates(A)
 
 So no isolated nodes were found, and consequently no nodes were purged. Great! What else can we do?
 
-It turns out that a common thing to do with functional MRI connectomes is to, in fact, not look at the correlations themselves, but the \emph{absolute correlations}. The intuition here is that, if one node is less active when another node is active, that \emph{kind of} indicates that they are still operating together, right? Let's take a look at how we can compute the absolute correlations:
+A common thing to do with functional MRI connectomes is to, in fact, not look at the correlations themselves, but the absolute correlations. The intuition here is that, if one node is less active when another node is active, that kind of indicates that they are still operating together. Let's take a look at how we can compute the absolute correlations:
 
 \begin{lstlisting}[style=python]
 import matplotlib.pyplot as plt
@@ -52,9 +52,11 @@ heatmap(A_abs, ax=axs[1], title="Human Connectome, Absolute", vmin=np.min(A), vm
 heatmap(A_abs - A, ax=axs[2], title="Difference(Absolute - Raw)", vmin=0, vmax=1)
 \end{lstlisting}
 
-As you can see in the right-most plot that you make, several of the values will change (the faint bands), which is indicated by larger differences from the raw to the absolute data. Note that you can use this \texttt{heatmap} function to plot the adjacency matrix as you manipulate it later on in this section.
+Several of the values will change (the faint bands), which is indicated by larger differences from the raw to the absolute data. You can use this \texttt{heatmap} function to plot the adjacency matrix as you manipulate it later on in this section.
 
-To streamline the process of cleaning up the raw data, you will often need to write custom data cleaners. You will want your cleaners to work seamlessly with \texttt{sklearn}'s functions, such as pipelines, and will require you to only implement three class methods: \texttt{fit()}, \texttt{transform()}, and \texttt{fit\_transform()}. By adding \texttt{TransformerMixin} as a base class, we do not even have to implement the third one! If we use \texttt{BaseEstimator} as a base class, we will also obtain \texttt{get\_params()} and \texttt{set\_params()}, which will be useful for hyperparameter tuning steps you might need in other settings. For example, here is an example cleaner class which purges the adjacency matrix of isolates and remaps the categorical labels to numbers. Note that a key step to implementing this all as cleanly as possible is that the inputs, an adjacency matrix and a vector of node labels, are passed in as a \emph{single} tuple object. This is because \texttt{sklearn} anticipates that the return arguments from calls of \texttt{transform()} can be passed sequentially to one another, which we will see later on when we try to string several of these transformers together into a single pipeline:
+To streamline the process of cleaning up the raw data, you will often need to write custom data cleaners. You will want your cleaners to work seamlessly with \texttt{sklearn}'s functions, such as pipelines, and will require you to only implement three class methods: \texttt{fit()}, \texttt{transform()}, and \texttt{fit\_transform()}. By adding \texttt{TransformerMixin} as a base class, we do not even have to implement the third one! If we use \texttt{BaseEstimator} as a base class, we will also obtain \texttt{get\_params()} and \texttt{set\_params()}, which will be useful for hyperparameter tuning steps you might need in other settings. 
+
+Here is an example cleaner class which purges the adjacency matrix of isolates and remaps the categorical labels to numbers. A key step to implementing this all as cleanly as possible is that the inputs, an adjacency matrix and a vector of node labels, are passed in as a \emph{single} tuple object. This is because \texttt{sklearn} anticipates that the return arguments from calls of \texttt{transform()} can be passed sequentially to one another.
 
 \begin{lstlisting}[style=python]
 from sklearn.base import TransformerMixin, BaseEstimator
@@ -79,15 +81,15 @@ A_clean = data_cleaner.transform(A)
 
 \subsection{Edge weight transformations}
 
-One of the most important transformations that we will come across in network machine learning is called \emph{edge-weight transformation}. Many networks you enounter, such as the human diffusion connectome, will have edge weights which do not just take values of 1 or 0 (edge or no edge, a \emph{binary} network); rather, many of the networks you come across may have discrete-weighted edges (the edges take non-negative inter values, such as 0, 1, 2, 3, ...), or decimal-weight edges (the edges take values like 0, 0.1234, 0.234, 2.4234, ...). For a number of reasons discussed later in Section \ref{sec:ch4:regularization}, this is often not really a desirable characteristic.  The edges in a network might be error prone, and it might only be desirable to capture one (or a few) properties about the edge weights, rather than just leave them in their raw values. Further, a lot of the techniques we come across throughout this book might not even \emph{work} on networks which are not binary. For this reason, we need to get accustomed to transforming the edge weights to take new sets of values.
+One of the most important transformations that we will come across in network machine learning is called \emph{edge-weight transformation}. Many networks you enounter, such as the human diffusion connectome, will have edge weights which do not just take values of 1 or 0 (edge or no edge, a \emph{binary} network); rather, many networks may have discrete-weighted edges (the edges take non-negative inter values, such as 0, 1, 2, 3, ...), or decimal-weight edges (the edges take values like 0, 0.1234, 0.234, 2.4234, ...). For a number of reasons discussed in Section \ref{sec:ch4:regularization}, this is often not really a desirable characteristic.  The edges in a network might be error prone, and it might only be desirable to capture one (or a few) properties about the edge weights, rather than just leave them in their raw values. Further, a lot of the techniques we come across throughout this book might not work on networks which are not binary. For this reason, we need to get accustomed to transforming the edge weights to take new sets of values.
 
 There are two common approaches to transform edge weights: the first is called binarization (set all of the edges to take a value of 0 or 1), and the second is called an ordinal transformation. 
 
-\subsubsection{Binarization of edges} 
+\subsubsection*{Binarization of edges} 
 
-Binarization is quite simple: the edges in the raw network take non-binary values (values other than just 0s and 1s), and you need them to be 0s and 1s for your algorithm. How do you solve this? 
+Binarization is quite simple. It means the edges in the raw network take non-binary values (values other than just 0s and 1s), and you need them to be 0s and 1s for your algorithm. How do you solve this? 
 
-The simplest thing to do is usually to just look at which edges take a value of zero, and keep them as zero, and then look at all of the edges which take a non-zero value, and set them to one. In effect, what this does is it just takes the original non-binary network, and converts it to a binary one. Let's take a look at how we can implement this using \texttt{graspologic}. We first look at the network before binarization, and then after:
+The simplest thing to do is usually to just look at which edges take a value of zero, and keep them as zero, and then set all of the edges which take a non-zero value to one. Let's take a look at how we can implement this using \texttt{graspologic}. We first look at the network before binarization, and then after:
 
 \begin{lstlisting}[style=python]
 from graspologic.utils import binarize
@@ -96,9 +98,9 @@ threshold = 0.4
 A_bin = binarize(A_clean > threshold)
 \end{lstlisting}
 
-If you plot the cleaned adjacency matrix and the binarized adjacency matrix like in Figure \ref{fig:ch2:cleaned_connectomes}, you will see that it retains a lot of the ``general idea'' of the weighted adjacency matrix, but it's a lot simpler. Whereas the edge weights in the left plot were \emph{continuous}, we've now \emph{binarized} the edges of the network to only take two possible values ($0$ or $1$). This has the effect of potentially reducing the \emph{variance} (since we no longer will need as complicated of descriptions to summarize the edge-weights), but potentially increasing the \emph{bias} (since we have simplified our data and have therefore potentially "thrown away" information that might be important).
+If you plot the cleaned adjacency matrix and the binarized adjacency matrix like in Figure \ref{fig:ch2:cleaned_connectomes}, you will see that it retains a lot of the ``general idea'' of the weighted adjacency matrix, but it's a lot simpler. Whereas the edge weights in the left plot were \emph{continuous}, we've now \emph{binarized} the edges of the network to only take two possible values ($0$ or $1$). This has the effect of potentially reducing the variance (since we no longer will need as complicated of descriptions to summarize the edge-weights), but potentially increasing the bias (since we have simplified our data and have therefore potentially "thrown away" information that might be important).
 
-Another way we could have normalized these edge weights is through something called a \emph{pass to ranks}. Through a pass to ranks, the edge weights are discarded entirely, with one exception: the edges which are non-zero are first ranked, from smallest to largest, with the largest item having a rank of one, and the smallest item having a rank of $\frac{1}{\text{number of non-zero edges}}$. This is called an \emph{ordinal transformation}, in that it preserves the \emph{orders} of the edge-weights, but discards all other information. The adjacency matrix of the ranked connectome is shown in Figure \ref{fig:ch2:cleaned_connectomes}(C).
+Another way we could have normalized these edge weights is through something called a \emph{pass to ranks}. Through a pass to ranks, the edge weights are discarded entirely, with one exception: the edges which are non-zero are first ranked, from smallest to largest, with the largest item having a rank of one, and the smallest item having a rank of 1/(number of non-zero edges). This is called an \emph{ordinal transformation}, in that it preserves the \emph{orders} of the edge-weights, but discards all other information. The adjacency matrix of the ranked connectome is shown in Figure \ref{fig:ch2:cleaned_connectomes}(C).
 
 \begin{lstlisting}[style=python]
 from graspologic.utils import pass_to_ranks
@@ -108,11 +110,11 @@ A_ptr = pass_to_ranks(A_clean)
 \begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{foundations/ch2/Images/cleaning_connectomes.png}
-    \caption[Re-weighting connectome edge-weights]{\textbf{(A)} shows the cleaned connectome, before re-weighting. \textbf{(B)} shows the binarized connectome. \textbf{(C)} shows the ranked connectome.}
+    \caption[Re-weighting connectome edge-weights]{\textbf{(A)} The cleaned connectome, before re-weighting. \textbf{(B)} The binarized connectome. \textbf{(C)} The ranked connectome.}
     \label{fig:ch2:cleaned_connectomes}
 \end{figure}
 
-This has shifted the histogram of edge-weights, as we can see by plotting a histogram of the edge-weights:
+This has shifted the histogram of edge-weights, as we can see by plotting a histogram:
 
 \begin{lstlisting}[style=python]
 import seaborn as sns
@@ -131,13 +133,13 @@ The histograms before and after passing the adjacency matrix to ranks are shown 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.6\linewidth]{foundations/ch2/Images/ptrhists.png}
-    \caption[Histograms of connectome edge weights]{\textbf{(A)} shows a histogram of the edge-weights in the adjacency matrix before normalization. \textbf{(B)} shows a histogram of the edge weights in the adjacency matrix after \texttt{ptr}.}
+    \caption[Histograms of connectome edge weights]{\textbf{(A)} Histogram of the edge-weights in the adjacency matrix before normalization. \textbf{(B)} Histogram of the edge weights in the adjacency matrix after \texttt{ptr}.}
     \label{fig:ch2:ptrhists}
 \end{figure}
 
 This has the desirable property that it bounds the network's edge weights to be between $0$ and $1$, as we can see above, which is often crucial if we seek to compare two or more networks and the edge weights are relative in magnitude (an edge's weight might mean something in relation to another edge's weight in that same network, but an edge's weight means nothing in relation to another edge's weight in a separate network). Further, passing to ranks is not very susceptible to outliers, as we will see in later chapters. 
 
-Again, we will turn the edge-weight transformation step into its own class, much like we did above:
+Again, we will turn the edge-weight transformation step into its own class:
 
 \begin{lstlisting}[style=python]
 class FeatureScaler(BaseEstimator, TransformerMixin):
@@ -155,9 +157,9 @@ A_cleaned_scaled = feature_scaler.transform(A_clean)
 # Scaling edge-weights...
 \end{lstlisting}
 
-\subsubsection{Transformation pipelines}
+\subsubsection*{Transformation pipelines}
 
-As you can see, there are a number of data transformations that need to be executed to prepare network data for machine learning algorithms. One thing that might be desirable is to develop a pipeline which automates the data preparation process for you. We will perform this using the \texttt{Pipeline} class from \texttt{sklearn}. The \texttt{Pipeline} class can help us apply sequences of transformations. Here is a simple pipeline for doing all of the steps we have performed so far:
+As you can see, there are a number of data transformations that need to be executed to prepare network data for machine learning algorithms. One thing that might be desirable is to develop a pipeline which automates the data preparation process for you. We perform this using the \texttt{Pipeline} class from \texttt{sklearn}. The \texttt{Pipeline} class can help us apply sequences of transformations. Here is a simple pipeline for doing all of the steps we have performed so far:
 \begin{lstlisting}[style=python]
 from sklearn.pipeline import Pipeline
 
@@ -176,7 +178,7 @@ The pipeline class takes a list of name/estimator pairs defining a sequence of s
 
 When you call the \texttt{fit\_transform()} method of the numerical pipeline, it calls the \texttt{fit\_transform()} method on each of the transformers, and passes the output of each call as the parameter to the next call, until it reaches the final estimator, for which it just calls the \texttt{fit()} method. 
 
-Next, we'll see the real handiness of the \texttt{Pipeline} module. The reason we went to lengths to define a pipeline was that we wanted to have an easily reproducible procedure that we could efficiently apply to new connectomes. Let's see how easy it is to apply to the second subject in our dataset:
+Next, we'll see the real handiness of the \texttt{Pipeline} module. The reason we went to lengths to define a pipeline was that we wanted to have an easily reproducible procedure that we could efficiently apply to new connectomes. This is easy to apply to the second subject in our dataset:
 
 \begin{lstlisting}[style=python]
 A_xfm2 = num_pipeline.fit_transform(As[1])
