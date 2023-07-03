@@ -1,7 +1,7 @@
 \section{Regularization}
 \label{sec:ch4:regularization}
 
-In practice, many networks you will encounter in network machine learning will \emph{not} be simple networks. As we discussed in the preceding discussion, many of the techniques we discuss will be just fine to use with weighted networks. Unfortunately, real world networks are often extremely noisy, and so the analysis of one real world network might not generalize very well to a similar real world network. For this reason, we turn to \emph{regularization}. 
+In practice, many networks you will encounter in network machine learning will not be simple networks: Many of the techniques we discuss will be just fine to use with weighted networks. Unfortunately, real world networks are often extremely noisy, and so the analysis of one real world network might not generalize very well to a similar real world network. For this reason, we turn to regularization. 
 
 \textit{Regularization} is the process by which you either:
 \begin{enumerate}
@@ -9,25 +9,25 @@ In practice, many networks you will encounter in network machine learning will \
     \item Modify the function you are estimating due to its fragility to the idiosyncracies of the observed data.
 \end{enumerate}
 
-In network machine learning, the first step of your analysis is to typically modify the network (or networks) themselves to allow better generalization of your statistical inference to new datasets. Later chapters, such as Section \ref{sec:ch6} and many areas of the Applications, will cover approaches in which you modify the function you are estimating.
+In network machine learning, the first step of your analysis is to typically modify the network (or networks) themselves to allow better generalization of your statistical inference to new datasets. Later chapters will cover approaches in which you modify the function you are estimating.
 
 For each of the following subsections, we'll pose an example, a simulation, and code for how to implement the desired regularization approach. It is important to realize that you might use several of these techniques simultaneously in practice, or you might have a reason to use these techniques that go outside of our working examples.
 
-To start this section off, we're going a few running examples for this section. We have two non-simple networks:
+We start with a few running examples for this section. We have two non-simple networks:
 
 \begin{floatingbox}[h]\caption{Activity/hobby network}
 The nodes of this network are a group of $50$ area students, the first $25$ of whom are athletes, and the second $25$ are in marching band. To collect the first network, you ask each student to select from a list of $50$ school activities and outside hobbies that they enjoy. For a pair of students $i$ and $j$, the weight of their interest alignment will be a score between $0$ and $50$ indicating how many activities or hobbies that they have in common. 
 
-We will refer to this network as the activity/hobby network. This network is obviously undirected, since if student $i$ shares $x$ activities or hobbies with student $j$, then student $j$ also shares $x$ activities or hobbies with student $i$. This network is weighted, since the score is between $0$ and $50$. Finally, this network is loopless, because it would not make sense to look at the activity/hobby alignment of a student with themself, since this number would be largely uninformative as every student would have perfect alignment of activities and hobbies with him or herself. 
+We will refer to this network as the activity/hobby network. This network is undirected, since if student $i$ shares $x$ activities or hobbies with student $j$, then student $j$ also shares $x$ activities or hobbies with student $i$. This network is weighted, since the score is between $0$ and $50$. Finally, this network is loopless, because it would not make sense to look at the activity/hobby alignment of a student with themself, since every student would have perfect alignment of activities and hobbies with him or herself. 
 
-Because the network is undirected, the researchers have only saved half the portion of the adjacency matrix that includes the entries $a_{ij}$ where $j > i$. You will learn a strategy later to recover the full adjacency matrix.
+Because the network is undirected, the researchers have only saved half the portion of the adjacency matrix that includes the entries $a_{ij}$ where $j > i$.
 \end{floatingbox}
 
 \begin{floatingbox}[h]\caption{Friendship network}
-This network is collected using the same $50$ students as the activity/hobby network. To collect the second network, you ask each student to rate how good of friends they are with other students, on a scale from $0$ to $1$. A score of $0$ means they are not friends with the student or do not know the student, and a score of $1$ means the student is their best friend. We will refer to this network as the friendship network. This network is clearly directed, since two students may differ on their understanding of how good of friends they are. This network is weighted, since the score is between $0$ and $1$. Finally, this network is also loopless, because it would not make sense to ask somebody how good of friends they are with themself.
+This network is collected using the same $50$ students as the activity/hobby network. To collect the second network, you ask each student to rate how good of friends they are with other students, on a scale from $0$ to $1$. A score of $0$ means they are not friends with the student or do not know the student, and a score of $1$ means the student is their best friend. We will refer to this network as the friendship network. This network is directed, since two students may differ on their understanding of how good of friends they are. This network is weighted, since the score is between $0$ and $1$. Finally, this network is also loopless, because it would not make sense to ask somebody how good of friends they are with themself.
 \end{floatingbox}
 
-Our scientific question of interest is how well activities and hobbies align with perceived notions of friendship. You want to use the preceding networks to learn about a hypothetical third network, a network whose nodes are identical to the two networks above, but whose edges are whether the two individuals are friends (or not) on facebook. To answer this question, you have quite the job to do to make your networks better suited to the task! We'll begin by simulating some example networks, which you can see in Figure \ref{fig:ch4:friendex}.
+Our scientific question of interest is how well activities and hobbies align with perceived notions of friendship. You want to use the networks of Examples 3.3 and 3.4 to learn about a hypothetical third network, whose nodes are identical to these two networks, but whose edges are whether the two individuals are friends (or not) on facebook. To answer this question, you have to do to some work to make your networks better suited to the task! We'll simulate some example networks, with output in Figure \ref{fig:ch4:friendex}.
 
 \begin{lstlisting}[style=python]
 from graspologic.simulations import sbm
@@ -54,7 +54,9 @@ A_friend = sbm(n=[25, 25], p=[[.8, .4], [.4, 1]], wt=np.random.beta, wtargs=wtar
     \label{fig:ch4:friendex}
 \end{figure}
 
-For good measure, we'll also work with a third network which will have unique particularities from the preceding two, where we want to ask a question about only this network itself. 
+%% ALEX STOPPING POINT 07/02 4:36pm}
+
+We'll also work with a third network which will have unique particularities from the preceding two, where we want to ask a question about only this network itself. 
 \begin{floatingbox}[h]\caption{Unrelated business network}
 The $17$ nodes in the network are local businesses, and an edge exists between a pair of businesses if they have business dealings with one another (they buy or sell products from/with the company). Three of these businesses operate in total exclusion and do not have any edges. Three of these businesses only work with one other business. One businesses work with all of the non-excluded businesses. 
 \end{floatingbox}
